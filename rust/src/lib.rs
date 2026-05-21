@@ -3,11 +3,34 @@ mod macros;
 mod godot_window;
 mod protocols;
 
+// Android integration — compiled only when targeting Android.
+#[cfg(target_os = "android")]
+mod android;
+
+// WRY Android binding macro — MUST be at crate root.
+//
+// Generates the JNI symbols that the Java WryActivity calls back into for
+// IPC messages, page-load events, etc.  The two identifiers must match the
+// package and Activity class name configured in your Godot Android export:
+//
+//   <package>.<ActivityClass>
+//
+// Default Godot 4 export: package = "com.example.game", activity = "GodotApp"
+// Update these to match your project's export settings before shipping.
+//
+// To change them without recompiling, set:
+//   WRY_ANDROID_PACKAGE=com.example.game.godot_wry
+//   WRY_ANDROID_LIBRARY=godot_wry
+#[cfg(target_os = "android")]
+wry::android_binding!(com_example_game, GodotApp);
+
 use godot::global::MouseButtonMask;
 use godot::init::*;
 use godot::prelude::*;
 use godot::classes::{Control, DisplayServer, IControl, InputEvent, InputEventMouseButton, InputEventMouseMotion, InputEventKey, ProjectSettings, Viewport};
 use godot::global::{Key, MouseButton};
+// Singleton trait must be explicitly imported in gdext 0.5+ for ::singleton() calls.
+use godot::obj::Singleton;
 use lazy_static::lazy_static;
 use serde_json;
 use std::collections::HashMap;
@@ -17,10 +40,13 @@ use wry::{WebViewBuilder, WebContext, Rect, WebViewAttributes, PageLoadEvent};
 use wry::dpi::{PhysicalPosition, PhysicalSize};
 use wry::http::Request;
 
+// GodotWindow is only used on desktop platforms (Win32/AppKit/Xlib).
+// On Android, WRY attaches to the Activity via ndk_context instead.
+#[cfg(not(target_os = "android"))]
 use crate::godot_window::GodotWindow;
 use crate::protocols::get_res_response;
 
-#[cfg(target_os = "windows")]
+#[cfg(all(not(target_os = "android"), target_os = "windows"))]
 use {
     raw_window_handle::{HasWindowHandle, RawWindowHandle},
     windows::Win32::Foundation::HWND,
@@ -30,7 +56,7 @@ use {
 
 // Required for Windows to link against the wevtapi library for webview2,
 // not sure why webview2-com-sys doesn't do this automatically.
-#[cfg(target_os = "windows")]
+#[cfg(all(not(target_os = "android"), target_os = "windows"))]
 #[link(name = "wevtapi")]
 extern "system" {}
 
@@ -64,7 +90,7 @@ struct WebView {
     #[export]
     devtools: bool,
     #[export]
-    headers: Dictionary,
+    headers: Dictionary<GString, Variant>,
     #[export]
     user_agent: GString,
     #[export]
@@ -169,8 +195,8 @@ impl WebView {
         let viewport_size = self.base().get_window()
             .map(|w| w.get_size())
             .unwrap_or_else(|| {
-                self.base().get_tree().expect("Could not get tree")
-                    .get_root().expect("Could not get viewport").get_size()
+                // get_tree() is infallible in gdext 0.5.x; get_root() still returns Option.
+                self.base().get_tree().get_root().expect("Could not get root viewport").get_size()
             });
         let window_position = DisplayServer::singleton().window_get_position_ex().window_id(self.window_id).done();
         let content_scale_factor = self.base().get_window()
@@ -198,12 +224,52 @@ impl WebView {
 
     fn build_webview(&mut self) {
         let display_server = DisplayServer::singleton();
-        if display_server.get_name() == "headless".into()
+        if display_server.get_name() == GString::from("headless")
         {
             godot_warn!("Godot WRY: Headless mode detected. webview will not be created.");
             return;
         }
 
+        // ── Android path ────────────────────────────────────────────────────
+        // On Android there is no OS window handle.  WRY attaches the WebView
+        // directly to the Activity via ndk_context.  We build it here and
+        // return early, skipping all desktop-only logic below.
+        #[cfg(target_os = "android")]
+        {
+            let url = if self.html.is_empty() {
+                Some(String::from(&self.url))
+            } else {
+                None
+            };
+            let html = if self.url.is_empty() {
+                Some(String::from(&self.html))
+            } else {
+                None
+            };
+
+            match android::build_android_webview(
+                url,
+                html,
+                self.devtools,
+                if self.user_agent.is_empty() {
+                    None
+                } else {
+                    Some(String::from(&self.user_agent))
+                },
+                self.incognito,
+                self.autoplay,
+            ) {
+                Ok(wv) => {
+                    self.webview.replace(wv);
+                }
+                Err(e) => {
+                    godot_error!("[Godot WRY] Android WebView build failed: {e}");
+                }
+            }
+            return; // Skip all desktop-only logic below.
+        }
+
+        // ── Desktop path (Windows / macOS / Linux) ───────────────────────────
         #[cfg(target_os = "linux")]
         gtk::init().expect("Failed to initialize GTK");
 
@@ -212,11 +278,12 @@ impl WebView {
             .unwrap_or(0);
         self.window_id = window_id;
 
+        #[cfg(not(target_os = "android"))]
         let window = GodotWindow::new(window_id);
 
         // remove WS_CLIPCHILDREN from the window style
         // otherwise, transparent on windows won't work
-        #[cfg(target_os = "windows")]
+        #[cfg(all(not(target_os = "android"), target_os = "windows"))]
         {
             let handle = window.window_handle().unwrap().as_raw();
             let raw_handle: HWND = match handle {
@@ -537,7 +604,8 @@ impl WebView {
             return;
         }
 
-        let mut viewport = self.base().get_tree().expect("Could not get tree").get_root().expect("Could not get viewport");
+        // get_tree() is infallible in gdext 0.5.x; get_root() still returns Option.
+        let mut viewport = self.base().get_tree().get_root().expect("Could not get root viewport");
         viewport.connect("size_changed", &Callable::from_object_method(&*self.base(), "resize"));
 
         self.base().clone().connect("resized", &Callable::from_object_method(&*self.base(), "resize"));
@@ -590,8 +658,8 @@ impl WebView {
                 let window_size = self.base().get_window()
                     .map(|w| w.get_size())
                     .unwrap_or_else(|| {
-                        self.base().get_tree().expect("Could not get tree")
-                            .get_root().expect("Could not get viewport").get_size()
+                        // get_tree() is infallible; get_root() still returns Option.
+                        self.base().get_tree().get_root().expect("Could not get root viewport").get_size()
                     });
                 Rect {
                     position: PhysicalPosition::new(0, 0).into(),

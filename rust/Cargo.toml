@@ -7,14 +7,29 @@ edition = "2021"
 crate-type = ["cdylib"]  # Compile this crate to a dynamic C library.
 
 [dependencies]
-godot = { git = "https://github.com/godot-rust/gdext", branch = "master", features = ["api-4-1"] }
+godot = { git = "https://github.com/godot-rust/gdext", branch = "master", features = ["api-4-2"] }
 raw-window-handle = "0.6.2"
 wry = { version = "0.50.4", features = ["transparent", "devtools"] }
 http = "1.1.0"
 lazy_static = "1.5.0"
 serde_json = "1.0"
+
 [target.'cfg(target_os = "linux")'.dependencies]
 gtk = "0.18.1"
 x11-dl = "2.21.0"
+
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0.61.1", features = ["Win32", "Win32_UI", "Win32_UI_WindowsAndMessaging", "Win32_System_Registry", "Win32_System_Diagnostics_Etw"]}
+
+# Android — ndk-context provides the global AndroidContext (JavaVM* + jobject Activity)
+# that WRY's Android backend reads via ndk_context::android_context().
+# WRY 0.50.4 already vendors `jni ^0.21` and `ndk ^0.9` internally for Android,
+# so we only need this one crate for our own Activity-pointer registration.
+[target.'cfg(target_os = "android")'.dependencies]
+ndk-context = "0.1"
+
+[build-dependencies]
+# Required for WRY's Android build step: generates the Kotlin/Java glue files
+# (WryActivity.kt, etc.) that must be included in the Android APK's source set.
+# See: WRY_ANDROID_PACKAGE / WRY_ANDROID_LIBRARY / WRY_ANDROID_KOTLIN_FILES_OUT_DIR
+# environment variables, which must be set before cross-compiling.

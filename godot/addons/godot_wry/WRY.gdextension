@@ -13,6 +13,13 @@ macos.release    = "bin/universal-apple-darwin/libgodot_wry.framework"
 windows.debug.x86_64   = "bin/x86_64-pc-windows-msvc/godot_wry.dll"
 windows.release.x86_64 = "bin/x86_64-pc-windows-msvc/godot_wry.dll"
 
+# Android — ARM64 (physical devices) and x86_64 (emulator)
+# Paths match cargo-ndk default output layout: -o ../godot/addons/godot_wry/bin/android
+android.debug.arm64    = "bin/android/arm64-v8a/libgodot_wry.so"
+android.release.arm64  = "bin/android/arm64-v8a/libgodot_wry.so"
+android.debug.x86_64   = "bin/android/x86_64/libgodot_wry.so"
+android.release.x86_64 = "bin/android/x86_64/libgodot_wry.so"
+
 [icons]
 WebView = "icons/webview.svg"
 

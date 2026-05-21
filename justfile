@@ -1,3 +1,4 @@
+set windows-shell := ["powershell.exe", "-c"]
 #!/usr/bin/env just --justfile
 
 os := if os() == "macos" { "macos" } else if os() == "windows" { "windows" } else { "linux" }
