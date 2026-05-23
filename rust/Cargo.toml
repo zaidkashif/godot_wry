@@ -27,6 +27,8 @@ windows = { version = "0.61.1", features = ["Win32", "Win32_UI", "Win32_UI_Windo
 # so we only need this one crate for our own Activity-pointer registration.
 [target.'cfg(target_os = "android")'.dependencies]
 ndk-context = "0.1"
+jni = "0.21.1"
+ndk = "0.9"
 
 [build-dependencies]
 # Required for WRY's Android build step: generates the Kotlin/Java glue files

@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="WRY"
+run/main_scene="res://addons/godot_wry/examples/character_creator_ui_demo/character_creator.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 
 [display]
@@ -20,4 +21,5 @@ window/size/viewport_height=1440
 
 [rendering]
 
+textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.00784314, 0.0235294, 0.0901961, 1)

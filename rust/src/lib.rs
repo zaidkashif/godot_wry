@@ -22,7 +22,9 @@ mod android;
 //   WRY_ANDROID_PACKAGE=com.example.game.godot_wry
 //   WRY_ANDROID_LIBRARY=godot_wry
 #[cfg(target_os = "android")]
-wry::android_binding!(com_example_game, GodotApp);
+fn _wry_android_binding() {
+    wry::android_binding!(com_example, godotwry);
+}
 
 use godot::global::MouseButtonMask;
 use godot::init::*;
@@ -75,6 +77,8 @@ struct WebView {
     previous_viewport_size: Vector2i,
     previous_window_position: Vector2i,
     previous_content_scale_factor: f32,
+    #[cfg(target_os = "android")]
+    android_init_deferred: bool,
     #[export]
     full_window_size: bool,
     #[export]
@@ -118,6 +122,8 @@ impl IControl for WebView {
             previous_viewport_size: Vector2i::default(),
             previous_window_position: Vector2i::default(),
             previous_content_scale_factor: 1.0,
+            #[cfg(target_os = "android")]
+            android_init_deferred: false,
             full_window_size: true,
             url: "https://github.com/doceazedo/godot_wry".into(),
             html: "".into(),
@@ -137,7 +143,18 @@ impl IControl for WebView {
     }
 
     fn ready(&mut self) {
-        self.create_webview();
+        // On Android, defer webview initialization by one frame to allow WryActivity.onCreate() 
+        // to complete wry::android_setup() before we try to build the webview.
+        #[cfg(target_os = "android")]
+        {
+            godot_print!("[Godot WRY] Deferring WebView initialization (WryActivity not yet ready)");
+            self.android_init_deferred = true;
+        }
+        
+        #[cfg(not(target_os = "android"))]
+        {
+            self.create_webview();
+        }
     }
 
     fn enter_tree(&mut self) {
@@ -152,6 +169,17 @@ impl IControl for WebView {
     }
 
     fn process(&mut self, _delta: f64) {
+        // Complete deferred Android initialization on first process frame
+        #[cfg(target_os = "android")]
+        {
+            if self.android_init_deferred {
+                godot_print!("[Godot WRY] Initializing WebView (WryActivity now ready)");
+                self.android_init_deferred = false;
+                self.create_webview();
+                return;
+            }
+        }
+        
         self.update_webview();
     }
 
@@ -230,53 +258,22 @@ impl WebView {
             return;
         }
 
-        // ── Android path ────────────────────────────────────────────────────
-        // On Android there is no OS window handle.  WRY attaches the WebView
-        // directly to the Activity via ndk_context.  We build it here and
-        // return early, skipping all desktop-only logic below.
-        #[cfg(target_os = "android")]
-        {
-            let url = if self.html.is_empty() {
-                Some(String::from(&self.url))
-            } else {
-                None
-            };
-            let html = if self.url.is_empty() {
-                Some(String::from(&self.html))
-            } else {
-                None
-            };
 
-            match android::build_android_webview(
-                url,
-                html,
-                self.devtools,
-                if self.user_agent.is_empty() {
-                    None
-                } else {
-                    Some(String::from(&self.user_agent))
-                },
-                self.incognito,
-                self.autoplay,
-            ) {
-                Ok(wv) => {
-                    self.webview.replace(wv);
-                }
-                Err(e) => {
-                    godot_error!("[Godot WRY] Android WebView build failed: {e}");
-                }
-            }
-            return; // Skip all desktop-only logic below.
-        }
 
         // ── Desktop path (Windows / macOS / Linux) ───────────────────────────
+        #[cfg(not(target_os = "android"))]
         #[cfg(target_os = "linux")]
         gtk::init().expect("Failed to initialize GTK");
 
+        #[cfg(not(target_os = "android"))]
         let window_id = self.base().get_window()
             .map(|w| w.get_window_id())
             .unwrap_or(0);
-        self.window_id = window_id;
+        
+        #[cfg(not(target_os = "android"))]
+        {
+            self.window_id = window_id;
+        }
 
         #[cfg(not(target_os = "android"))]
         let window = GodotWindow::new(window_id);
@@ -591,18 +588,63 @@ impl WebView {
             godot_error!("[Godot WRY] You have entered both a URL and HTML code. You may only enter one at a time.")
         }
 
-        let webview = webview_builder.build_as_child(&window).unwrap();
-        self.webview.replace(webview);
+        #[cfg(target_os = "android")]
+        {
+            if !crate::android::is_android_ready() {
+                godot_error!("[Godot WRY] Android WRY not ready — wry::android_setup() was not called. \
+                    Ensure WryActivity.onCreate() ran before the WebView node enters the tree.");
+                return;
+            }
+            godot_print!("[Godot WRY] Android context ready, building WebView...");
+            
+            use core::ptr::NonNull;
+            use core::ffi::c_void;
+            use raw_window_handle::{AndroidNdkWindowHandle, RawWindowHandle, WindowHandle, HasWindowHandle};
+            use godot::classes::display_server::HandleType;
+            use godot::classes::DisplayServer;
+
+            let display_server = DisplayServer::singleton();
+            let window_handle_ptr = display_server.window_get_native_handle(HandleType::WINDOW_HANDLE);
+            
+            if window_handle_ptr != 0 {
+                let android_handle = AndroidNdkWindowHandle::new(NonNull::new(window_handle_ptr as *mut c_void).unwrap());
+                let raw_window_handle = RawWindowHandle::AndroidNdk(android_handle);
+                let borrowed_handle = unsafe { WindowHandle::borrow_raw(raw_window_handle) };
+                
+                struct Wrapper<'a>(WindowHandle<'a>);
+                impl<'a> HasWindowHandle for Wrapper<'a> {
+                    fn window_handle(&self) -> Result<WindowHandle<'_>, raw_window_handle::HandleError> {
+                        Ok(self.0.clone())
+                    }
+                }
+
+                match webview_builder.build(&Wrapper(borrowed_handle)) {
+                    Ok(wv) => { godot_print!("[Godot WRY] Android WebView built successfully!"); self.webview.replace(wv) },
+                    Err(e) => { godot_error!("[Godot WRY] Android WebView build failed: {e}"); None }
+                };
+            } else {
+                godot_error!("[Godot WRY] Failed to get valid window handle from DisplayServer");
+            }
+        }
+
+        #[cfg(not(target_os = "android"))]
+        {
+            let webview = webview_builder.build_as_child(&window).unwrap();
+            self.webview.replace(webview);
+        }
 
         self.resize()
     }
 
     #[func]
     fn create_webview(&mut self) {
+        godot_print!("[Godot WRY] create_webview called!");
         self.build_webview();
         if self.webview.is_none() {
+            godot_print!("[Godot WRY] create_webview failed: webview is none!");
             return;
         }
+        godot_print!("[Godot WRY] create_webview succeeded!");
 
         // get_tree() is infallible in gdext 0.5.x; get_root() still returns Option.
         let mut viewport = self.base().get_tree().get_root().expect("Could not get root viewport");
@@ -612,12 +654,12 @@ impl WebView {
         self.base().clone().connect("visibility_changed", &Callable::from_object_method(&*self.base(), "update_visibility"));
     }
 
-    fn reparent_webview(&mut self, new_window_id: i32) {
+    fn reparent_webview(&mut self, _new_window_id: i32) {
         if self.webview.is_none() { return; }
 
         #[cfg(target_os = "windows")]
         {
-            let window = GodotWindow::new(new_window_id);
+            let window = GodotWindow::new(_new_window_id);
             if let Ok(wh) = window.window_handle() {
                 if let RawWindowHandle::Win32(win32) = wh.as_raw() {
                     let hwnd = win32.hwnd.get() as isize;
@@ -629,7 +671,7 @@ impl WebView {
                     };
 
                     if self.webview.as_ref().unwrap().reparent(hwnd).is_ok() {
-                        self.window_id = new_window_id;
+                        self.window_id = _new_window_id;
                         self.resize();
                         return;
                     }

@@ -1,15 +1,15 @@
-use godot::classes::display_server::HandleType;
-use godot::classes::DisplayServer;
-use godot::obj::Singleton;
-use raw_window_handle::{HandleError, HasWindowHandle, RawWindowHandle, WindowHandle};
-
 // Platform-specific window handle imports — none of these exist on Android.
 // The entire HasWindowHandle impl is gated below with cfg(not(target_os = "android")).
+#[cfg(not(target_os = "android"))]
+use raw_window_handle::{HandleError, HasWindowHandle, RawWindowHandle, WindowHandle};
 
 #[cfg(all(not(target_os = "android"), target_os = "windows"))]
 use {
     std::num::{NonZero, NonZeroIsize},
     raw_window_handle::Win32WindowHandle,
+    godot::classes::DisplayServer,
+    godot::classes::display_server::HandleType,
+    godot::obj::Singleton,
 };
 
 #[cfg(all(not(target_os = "android"), target_os = "macos"))]
@@ -18,12 +18,18 @@ use {
     std::ffi::c_void,
     std::mem::transmute,
     std::ptr::NonNull,
+    godot::classes::DisplayServer,
+    godot::classes::display_server::HandleType,
+    godot::obj::Singleton,
 };
 
 #[cfg(all(not(target_os = "android"), target_os = "linux"))]
 use {
     std::ffi::c_ulong,
     raw_window_handle::XlibWindowHandle,
+    godot::classes::DisplayServer,
+    godot::classes::display_server::HandleType,
+    godot::obj::Singleton,
 };
 
 /// A thin wrapper around a Godot `window_id` that implements the
@@ -33,10 +39,12 @@ use {
 /// implemented — the Android WebView path uses `ndk_context` instead of
 /// OS window handles. The struct itself is only ever constructed under a
 /// `#[cfg(not(target_os = "android"))]` guard in `lib.rs`.
+#[cfg_attr(target_os = "android", allow(dead_code))]
 pub struct GodotWindow {
     pub window_id: i32,
 }
 
+#[cfg_attr(target_os = "android", allow(dead_code))]
 impl GodotWindow {
     pub fn new(window_id: i32) -> Self {
         Self { window_id }
