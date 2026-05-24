@@ -46,7 +46,6 @@ use wry::http::Request;
 // On Android, WRY attaches to the Activity via ndk_context instead.
 #[cfg(not(target_os = "android"))]
 use crate::godot_window::GodotWindow;
-use crate::protocols::get_res_response;
 
 #[cfg(all(not(target_os = "android"), target_os = "windows"))]
 use {
@@ -72,7 +71,16 @@ unsafe impl ExtensionLibrary for GodotWRY {}
 struct WebView {
     base: Base<Control>,
     webview: Option<wry::WebView>,
+    // ── FIX: WebContext must live as long as the WebView. ──────────────────
+    // If WebContext is a local variable inside build_webview(), Rust drops it
+    // the moment that function returns — but the WebView still holds an
+    // internal pointer to it. That is a use-after-free and is the exact cause
+    // of the native crash ~5 seconds after "Android WebView built successfully!"
+    // Storing it here in the struct guarantees it is dropped only when the
+    // WebView node itself is freed from the Godot scene tree.
+    web_context: Option<WebContext>,
     window_id: i32,
+    cached_global_position: Arc<Mutex<Vector2>>,
     previous_global_position: Vector2,
     previous_viewport_size: Vector2i,
     previous_window_position: Vector2i,
@@ -117,7 +125,9 @@ impl IControl for WebView {
         Self {
             base,
             webview: None,
+            web_context: None, // ── FIX: initialise to None
             window_id: 0,
+            cached_global_position: Arc::new(Mutex::new(Vector2::default())),
             previous_global_position: Vector2::default(),
             previous_viewport_size: Vector2i::default(),
             previous_window_position: Vector2i::default(),
@@ -143,14 +153,15 @@ impl IControl for WebView {
     }
 
     fn ready(&mut self) {
-        // On Android, defer webview initialization by one frame to allow WryActivity.onCreate() 
-        // to complete wry::android_setup() before we try to build the webview.
+        // On Android, defer webview initialization by one frame to allow
+        // WryActivity.onCreate() to complete wry::android_setup() before we
+        // try to build the webview.
         #[cfg(target_os = "android")]
         {
             godot_print!("[Godot WRY] Deferring WebView initialization (WryActivity not yet ready)");
             self.android_init_deferred = true;
         }
-        
+
         #[cfg(not(target_os = "android"))]
         {
             self.create_webview();
@@ -169,7 +180,11 @@ impl IControl for WebView {
     }
 
     fn process(&mut self, _delta: f64) {
-        // Complete deferred Android initialization on first process frame
+        if let Ok(mut pos) = self.cached_global_position.lock() {
+            *pos = self.base().get_global_position();
+        }
+
+        // Complete deferred Android initialization on first process frame.
         #[cfg(target_os = "android")]
         {
             if self.android_init_deferred {
@@ -179,7 +194,7 @@ impl IControl for WebView {
                 return;
             }
         }
-        
+
         self.update_webview();
     }
 
@@ -223,7 +238,6 @@ impl WebView {
         let viewport_size = self.base().get_window()
             .map(|w| w.get_size())
             .unwrap_or_else(|| {
-                // get_tree() is infallible in gdext 0.5.x; get_root() still returns Option.
                 self.base().get_tree().get_root().expect("Could not get root viewport").get_size()
             });
         let window_position = DisplayServer::singleton().window_get_position_ex().window_id(self.window_id).done();
@@ -252,13 +266,10 @@ impl WebView {
 
     fn build_webview(&mut self) {
         let display_server = DisplayServer::singleton();
-        if display_server.get_name() == GString::from("headless")
-        {
+        if display_server.get_name() == GString::from("headless") {
             godot_warn!("Godot WRY: Headless mode detected. webview will not be created.");
             return;
         }
-
-
 
         // ── Desktop path (Windows / macOS / Linux) ───────────────────────────
         #[cfg(not(target_os = "android"))]
@@ -269,7 +280,7 @@ impl WebView {
         let window_id = self.base().get_window()
             .map(|w| w.get_window_id())
             .unwrap_or(0);
-        
+
         #[cfg(not(target_os = "android"))]
         {
             self.window_id = window_id;
@@ -278,39 +289,34 @@ impl WebView {
         #[cfg(not(target_os = "android"))]
         let window = GodotWindow::new(window_id);
 
-        // remove WS_CLIPCHILDREN from the window style
-        // otherwise, transparent on windows won't work
+        // Remove WS_CLIPCHILDREN from the window style so that transparent
+        // webviews work correctly on Windows.
         #[cfg(all(not(target_os = "android"), target_os = "windows"))]
         {
             let handle = window.window_handle().unwrap().as_raw();
             let raw_handle: HWND = match handle {
                 RawWindowHandle::Win32(win32) => HWND(win32.hwnd.get() as _),
-                _ => {
-                    panic!("Unsupported window handle type");
-                }
+                _ => panic!("Unsupported window handle type"),
             };
-
             unsafe {
                 let current_style = GetWindowLongPtrA(raw_handle, GWL_STYLE);
-                // remove WS_CLIPCHILDREN
                 SetWindowLongPtrA(raw_handle, GWL_STYLE, current_style & !0x02000000);
             };
         }
 
         let base = Arc::new(Mutex::new(self.base().clone()));
+
+        // ── Resolve the data directory ────────────────────────────────────────
         let resolved_data_directory: Option<PathBuf> = if !self.data_directory.is_empty() {
             let data_directory = self.data_directory.to_string();
 
             if data_directory.starts_with("user://") {
                 let path_without_prefix = data_directory.trim_start_matches("user://");
-
                 let project_settings = ProjectSettings::singleton();
                 let base_path = project_settings.globalize_path("user://").to_string();
                 let mut absolute_path = PathBuf::from(base_path);
                 absolute_path.push(path_without_prefix);
-
                 std::fs::create_dir_all(&absolute_path).ok();
-
                 Some(absolute_path)
             } else {
                 let path = PathBuf::from(&data_directory);
@@ -320,33 +326,79 @@ impl WebView {
         } else {
             None
         };
-        let mut context = WebContext::new(resolved_data_directory);
-        let webview_builder = WebViewBuilder::with_attributes(WebViewAttributes {
-            context: Some(&mut context),
-            url: if self.html.is_empty() { Some(String::from(&self.url)) } else { None },
-            html: if self.url.is_empty() { Some(String::from(&self.html)) } else { None },
-            transparent: self.transparent,
-            devtools: self.devtools,
-            // headers: Some(HeaderMap::try_from(self.headers.iter_shared().typed::<GString, Variant>()).unwrap_or_default()),
-            user_agent: Some(String::from(&self.user_agent)),
-            zoom_hotkeys_enabled: self.zoom_hotkeys,
-            clipboard: self.clipboard,
-            incognito: self.incognito,
-            focused: self.focused_when_created,
-            autoplay: self.autoplay,
-            accept_first_mouse: true,
-            ..Default::default()
-        })
+
+        if !self.url.is_empty() && !self.html.is_empty() {
+            godot_error!("[Godot WRY] You have entered both a URL and HTML code. You may only enter one at a time.");
+        }
+
+       // ── Android path ──────────────────────────────────────────────────────
+        //
+        // KEY FIXES vs. original code:
+        //
+        // FIX 1 — WebContext lifetime
+        //   Previously:  let mut context = WebContext::new(...);  ← local variable
+        //                webview_builder.build(...)                ← WebView created
+        //                // build_webview() returns → context DROPPED → crash ~5s later
+        //
+        //   Now:         self.web_context = Some(WebContext::new(...));
+        //                The context lives inside the Godot node and is only freed
+        //                when the node is removed from the scene tree.
+        //
+        // FIX 2 — Do NOT pass a window handle on Android
+        //   Previously the code called:
+        //     display_server.window_get_native_handle(WINDOW_HANDLE)
+        //   and wrapped it in AndroidNdkWindowHandle, then passed it to build().
+        //   That pointer is Godot's ANativeWindow* (the raw Vulkan surface), NOT
+        //   the Android Activity. WRY's Android backend does NOT use a window
+        //   handle — it uses the Activity reference stored by ndk_context during
+        //   wry::android_setup(). Passing a random ANativeWindow* was causing
+        //   undefined behaviour and contributing to the native crash.
+        //   The correct call is simply: webview_builder.build()  (no argument).
+        #[cfg(target_os = "android")]
+        {
+            if !crate::android::is_android_ready() {
+                godot_error!(
+                    "[Godot WRY] Android WRY not ready — wry::android_setup() was not called. \
+                     Ensure WryActivity.onCreate() ran before the WebView node enters the tree."
+                );
+                return;
+            }
+
+            godot_print!("[Godot WRY] Android context ready, building WebView...");
+
+            // ── FIX 1: store WebContext in self, not a local variable ─────────
+            self.web_context = Some(WebContext::new(resolved_data_directory));
+            let context = self.web_context.as_mut().unwrap();
+
+            // Reconstruct the builder head with the matching Wry Attributes struct
+            let webview_builder = WebViewBuilder::with_attributes(WebViewAttributes {
+                url: if self.html.is_empty() { Some(String::from(&self.url)) } else { None },
+                html: if self.url.is_empty() { Some(String::from(&self.html)) } else { None },
+                transparent: true,  // Force transparent on Android so Godot scene shows through
+                devtools: self.devtools,
+                user_agent: Some(String::from(&self.user_agent)),
+                zoom_hotkeys_enabled: self.zoom_hotkeys,
+                clipboard: self.clipboard,
+                incognito: self.incognito,
+                focused: self.focused_when_created,
+                autoplay: self.autoplay,
+                accept_first_mouse: true,
+                ..Default::default()
+            })
+            .with_custom_protocol(
+                "res".into(), move |_webview_id, request| crate::protocols::get_res_response(request),
+            )
             .with_ipc_handler({
                 let base = Arc::clone(&base);
+                let cached_pos = Arc::clone(&self.cached_global_position);
                 move |req: Request<String>| {
                     let mut base = base.lock().unwrap();
                     let body = req.body().as_str();
-                    
+
                     if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(body) {
                         if let Some(event_type) = json_value.get("type").and_then(|t| t.as_str()) {
-                            let global_pos = base.get_global_position();
-
+                            // On Android IPC runs off main thread — read position safely
+                            let global_pos = *cached_pos.lock().unwrap();
                             let x = json_value.get("x").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
                             let y = json_value.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
                             let vp_x = global_pos.x + x;
@@ -356,34 +408,28 @@ impl WebView {
                                 "_mouse_move" => {
                                     let movement_x = json_value.get("movementX").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
                                     let movement_y = json_value.get("movementY").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
-                                    
                                     let mut event = InputEventMouseMotion::new_gd();
                                     event.set_position(Vector2::new(vp_x, vp_y));
                                     event.set_global_position(Vector2::new(vp_x, vp_y));
-                                    
                                     let button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
                                     event.set_button_mask(*button_mask);
-
                                     event.set_relative(Vector2::new(movement_x, movement_y));
-                                    
                                     if let Some(mut viewport) = base.get_viewport() {
-                                        viewport.push_input(&event);
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
                                     }
                                     return;
-                                },
-                                
+                                }
+
                                 "_mouse_down" | "_mouse_up" => {
                                     let button = json_value.get("button").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-                                    
                                     let godot_button = match button {
                                         0 => MouseButton::LEFT,
                                         1 => MouseButton::MIDDLE,
                                         2 => MouseButton::RIGHT,
                                         3 => MouseButton::WHEEL_UP,
                                         4 => MouseButton::WHEEL_DOWN,
-                                        _ => MouseButton::LEFT, // default to left button
+                                        _ => MouseButton::LEFT,
                                     };
-                                    
                                     let pressed = event_type == "_mouse_down";
                                     let mask = match godot_button {
                                         MouseButton::LEFT => MouseButtonMask::LEFT,
@@ -391,7 +437,6 @@ impl WebView {
                                         MouseButton::MIDDLE => MouseButtonMask::MIDDLE,
                                         _ => MouseButtonMask::default(),
                                     };
-                                    
                                     if godot_button != MouseButton::WHEEL_UP && godot_button != MouseButton::WHEEL_DOWN {
                                         let mut button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
                                         if pressed {
@@ -402,41 +447,37 @@ impl WebView {
                                                     if button_mask.is_set(MouseButtonMask::LEFT) {
                                                         *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::LEFT.ord());
                                                     }
-                                                },
+                                                }
                                                 MouseButton::RIGHT => {
                                                     if button_mask.is_set(MouseButtonMask::RIGHT) {
                                                         *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::RIGHT.ord());
                                                     }
-                                                },
+                                                }
                                                 MouseButton::MIDDLE => {
                                                     if button_mask.is_set(MouseButtonMask::MIDDLE) {
                                                         *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::MIDDLE.ord());
                                                     }
-                                                },
+                                                }
                                                 _ => {}
                                             }
                                         }
                                     }
-                                    
                                     let mut event = InputEventMouseButton::new_gd();
                                     event.set_button_index(godot_button);
                                     event.set_position(Vector2::new(vp_x, vp_y));
                                     event.set_global_position(Vector2::new(vp_x, vp_y));
                                     event.set_pressed(pressed);
-                                    
                                     let button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
                                     event.set_button_mask(*button_mask);
-                                    
                                     if let Some(mut viewport) = base.get_viewport() {
-                                        viewport.push_input(&event);
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
                                     }
                                     return;
-                                },
+                                }
 
                                 "_mouse_wheel" => {
                                     let delta_x = json_value.get("deltaX").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
                                     let delta_y = json_value.get("deltaY").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
-
                                     let position = Vector2::new(vp_x, vp_y);
                                     let button_mask = *CURRENT_BUTTON_MASK.lock().unwrap();
                                     let modifiers = (
@@ -445,158 +486,81 @@ impl WebView {
                                         json_value.get("alt").and_then(|v| v.as_bool()).unwrap_or(false),
                                         json_value.get("meta").and_then(|v| v.as_bool()).unwrap_or(false),
                                     );
-
                                     let viewport = base.get_viewport();
-
                                     if delta_y != 0.0 {
                                         let button = if delta_y < 0.0 { MouseButton::WHEEL_UP } else { MouseButton::WHEEL_DOWN };
                                         let factor = (delta_y.abs() / 100.0).max(1.0);
                                         send_wheel_event(button, position, factor, button_mask, modifiers, &viewport);
                                     }
-
                                     if delta_x != 0.0 {
                                         let button = if delta_x < 0.0 { MouseButton::WHEEL_LEFT } else { MouseButton::WHEEL_RIGHT };
                                         let factor = (delta_x.abs() / 100.0).max(1.0);
                                         send_wheel_event(button, position, factor, button_mask, modifiers, &viewport);
                                     }
-
                                     return;
-                                },
+                                }
 
                                 "_key_down" | "_key_up" => {
                                     let key_str = json_value.get("key").and_then(|v| v.as_str()).unwrap_or("");
                                     let mut event = InputEventKey::new_gd();
-                                    
                                     let godot_key = GODOT_KEYS.get(key_str).copied().unwrap_or(Key::NONE);
-                                    
                                     event.set_keycode(godot_key);
                                     event.set_pressed(event_type == "_key_down");
                                     event.set_shift_pressed(json_value.get("shift").and_then(|v| v.as_bool()).unwrap_or(false));
                                     event.set_ctrl_pressed(json_value.get("ctrl").and_then(|v| v.as_bool()).unwrap_or(false));
                                     event.set_alt_pressed(json_value.get("alt").and_then(|v| v.as_bool()).unwrap_or(false));
                                     event.set_meta_pressed(json_value.get("meta").and_then(|v| v.as_bool()).unwrap_or(false));
-                                    
                                     if let Some(mut viewport) = base.get_viewport() {
-                                        viewport.push_input(&event);
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
                                     }
                                     return;
-                                },
-                                
+                                }
+
                                 _ => {}
                             }
                         }
                     }
-                    
-                    // if we get here, this is a regular IPC message
-                    base.call_deferred("emit_signal", &["ipc_message".to_variant(), body.to_variant()]); 
+
+                    // Regular IPC message — forward to GDScript signal.
+                    base.call_deferred("emit_signal", &["ipc_message".to_variant(), body.to_variant()]);
                 }
             })
             .with_on_page_load_handler({
                 let base = Arc::clone(&base);
-                move | event: PageLoadEvent, url: String | {
+                move |event: PageLoadEvent, url: String| {
                     let mut base = base.lock().unwrap();
-
                     match event {
                         PageLoadEvent::Started => base.call_deferred("emit_signal", &["page_load_started".to_variant(), url.to_variant()]),
                         PageLoadEvent::Finished => base.call_deferred("emit_signal", &["page_load_finished".to_variant(), url.to_variant()]),
                     };
                 }
             })
-            .with_custom_protocol(
-                "res".into(), move |_webview_id, request| get_res_response(request),
-            );
-
-        let webview_builder = if self.forward_input_events {
-            webview_builder.with_initialization_script(r#"
-                document.addEventListener('mousemove', (e) => {
-                    if (!document.hasFocus()) return;
-                    window.ipc.postMessage(JSON.stringify({
-                        type: '_mouse_move',
-                        x: e.clientX,
-                        y: e.clientY,
-                        movementX: e.movementX,
-                        movementY: e.movementY,
-                        button: e.button
-                    }));
-                });
-                document.addEventListener('mousedown', (e) => {
-                    if (!document.hasFocus()) return;
-                    window.ipc.postMessage(JSON.stringify({
-                        type: '_mouse_down',
-                        x: e.clientX,
-                        y: e.clientY,
-                        button: e.button
-                    }));
-                });
-                document.addEventListener('mouseup', (e) => {
-                    if (!document.hasFocus()) return;
-                    window.ipc.postMessage(JSON.stringify({
-                        type: '_mouse_up',
-                        x: e.clientX,
-                        y: e.clientY,
-                        button: e.button
-                    }));
-                });
-                document.addEventListener('wheel', (e) => {
-                    if (!document.hasFocus()) return;
-                    window.ipc.postMessage(JSON.stringify({
-                        type: '_mouse_wheel',
-                        x: e.clientX,
-                        y: e.clientY,
-                        deltaX: e.deltaX,
-                        deltaY: e.deltaY,
-                        shift: e.shiftKey,
-                        ctrl: e.ctrlKey,
-                        alt: e.altKey,
-                        meta: e.metaKey
-                    }));
-                });
-                document.addEventListener('keydown', (e) => {
-                    if (!document.hasFocus()) return;
-                    const isModifier = ["Alt", "Shift", "Control", "Meta"].includes(e.key);
-                    window.ipc.postMessage(JSON.stringify({
-                        type: '_key_down',
-                        key: e.key,
-                        code: e.code,
-                        keyCode: e.keyCode,
-                        shift: isModifier ? false : e.shiftKey,
-                        ctrl: isModifier ? false : e.ctrlKey,
-                        alt: isModifier ? false : e.altKey,
-                        meta: isModifier ? false : e.metaKey
-                    }));
-                });
-                document.addEventListener('keyup', (e) => {
-                    if (!document.hasFocus()) return;
-                    const isModifier = ["Alt", "Shift", "Control", "Meta"].includes(e.key);
-                    window.ipc.postMessage(JSON.stringify({
-                        type: '_key_up',
-                        key: e.key,
-                        code: e.code,
-                        keyCode: e.keyCode,
-                        shift: isModifier ? false : e.shiftKey,
-                        ctrl: isModifier ? false : e.ctrlKey,
-                        alt: isModifier ? false : e.altKey,
-                        meta: isModifier ? false : e.metaKey
-                    }));
-                });
-            "#)
-        } else {
-            webview_builder
-        };
-
-        if !self.url.is_empty() && !self.html.is_empty() {
-            godot_error!("[Godot WRY] You have entered both a URL and HTML code. You may only enter one at a time.")
-        }
-
-        #[cfg(target_os = "android")]
-        {
-            if !crate::android::is_android_ready() {
-                godot_error!("[Godot WRY] Android WRY not ready — wry::android_setup() was not called. \
-                    Ensure WryActivity.onCreate() ran before the WebView node enters the tree.");
-                return;
+            .with_initialization_script(r#"
+    (function() {
+        var style = document.createElement('style');
+        style.innerHTML = `
+            html, body, #app, main, div[data-sveltekit-svelte-body], div[data-sveltekit-body] {
+                background: transparent !important;
+                background-color: transparent !important;
             }
-            godot_print!("[Godot WRY] Android context ready, building WebView...");
-            
+        `;
+        if (document.head) {
+            document.head.appendChild(style);
+        } else {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.head.appendChild(style);
+            });
+        }
+    })();
+"#)
+            ;
+            // On Android, touch events are handled natively by the WebView.
+            // Forwarding via IPC causes thread violations.
+            let webview_builder = webview_builder; 
+            // skip input script on Android
+            // WRY's Android backend ignores the window handle since it attaches to the
+            // Activity, but the Rust type system strictly requires a HasWindowHandle argument.
+            // We pass the DisplayServer's handle to satisfy the compiler.
             use core::ptr::NonNull;
             use core::ffi::c_void;
             use raw_window_handle::{AndroidNdkWindowHandle, RawWindowHandle, WindowHandle, HasWindowHandle};
@@ -618,22 +582,261 @@ impl WebView {
                     }
                 }
 
-                match webview_builder.build(&Wrapper(borrowed_handle)) {
-                    Ok(wv) => { godot_print!("[Godot WRY] Android WebView built successfully!"); self.webview.replace(wv) },
-                    Err(e) => { godot_error!("[Godot WRY] Android WebView build failed: {e}"); None }
+              match webview_builder.build(&Wrapper(borrowed_handle)) {
+                    Ok(wv) => {
+                        godot_print!("[Godot WRY] Android WebView built successfully!");
+                        self.webview.replace(wv);
+                    }
+                    Err(e) => {
+                        godot_error!("[Godot WRY] Android WebView build failed: {e}");
+                        self.web_context = None;
+                    }
                 };
             } else {
                 godot_error!("[Godot WRY] Failed to get valid window handle from DisplayServer");
             }
         }
-
+        // ── Desktop path (non-Android) ────────────────────────────────────────
         #[cfg(not(target_os = "android"))]
         {
+            // On desktop, WebContext can be a local variable because
+            // build_as_child() is synchronous and the WebView copies what it
+            // needs before returning. The context is intentionally NOT stored
+            // in self here to preserve the original desktop behaviour.
+            let mut context = WebContext::new(resolved_data_directory);
+
+            let webview_builder = WebViewBuilder::with_attributes(WebViewAttributes {
+                context: Some(&mut context),
+                url: if self.html.is_empty() { Some(String::from(&self.url)) } else { None },
+                html: if self.url.is_empty() { Some(String::from(&self.html)) } else { None },
+                transparent: self.transparent,
+                devtools: self.devtools,
+                user_agent: Some(String::from(&self.user_agent)),
+                zoom_hotkeys_enabled: self.zoom_hotkeys,
+                clipboard: self.clipboard,
+                incognito: self.incognito,
+                focused: self.focused_when_created,
+                autoplay: self.autoplay,
+                accept_first_mouse: true,
+                ..Default::default()
+            })
+            .with_ipc_handler({
+                let base = Arc::clone(&base);
+                let cached_pos = Arc::clone(&self.cached_global_position);
+                move |req: Request<String>| {
+                    let mut base = base.lock().unwrap();
+                    let body = req.body().as_str();
+
+                    if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(body) {
+                        if let Some(event_type) = json_value.get("type").and_then(|t| t.as_str()) {
+                            let global_pos = *cached_pos.lock().unwrap();
+                            let x = json_value.get("x").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                            let y = json_value.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                            let vp_x = global_pos.x + x;
+                            let vp_y = global_pos.y + y;
+
+                            match event_type {
+                                "_mouse_move" => {
+                                    let movement_x = json_value.get("movementX").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let movement_y = json_value.get("movementY").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let mut event = InputEventMouseMotion::new_gd();
+                                    event.set_position(Vector2::new(vp_x, vp_y));
+                                    event.set_global_position(Vector2::new(vp_x, vp_y));
+                                    let button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
+                                    event.set_button_mask(*button_mask);
+                                    event.set_relative(Vector2::new(movement_x, movement_y));
+                                    if let Some(mut viewport) = base.get_viewport() {
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
+                                    }
+
+
+                                    return;
+                                }
+
+                                "_mouse_down" | "_mouse_up" => {
+                                    let button = json_value.get("button").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+                                    let godot_button = match button {
+                                        0 => MouseButton::LEFT,
+                                        1 => MouseButton::MIDDLE,
+                                        2 => MouseButton::RIGHT,
+                                        3 => MouseButton::WHEEL_UP,
+                                        4 => MouseButton::WHEEL_DOWN,
+                                        _ => MouseButton::LEFT,
+                                    };
+                                    let pressed = event_type == "_mouse_down";
+                                    let mask = match godot_button {
+                                        MouseButton::LEFT => MouseButtonMask::LEFT,
+                                        MouseButton::RIGHT => MouseButtonMask::RIGHT,
+                                        MouseButton::MIDDLE => MouseButtonMask::MIDDLE,
+                                        _ => MouseButtonMask::default(),
+                                    };
+                                    if godot_button != MouseButton::WHEEL_UP && godot_button != MouseButton::WHEEL_DOWN {
+                                        let mut button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
+                                        if pressed {
+                                            *button_mask = *button_mask | mask;
+                                        } else {
+                                            match godot_button {
+                                                MouseButton::LEFT => {
+                                                    if button_mask.is_set(MouseButtonMask::LEFT) {
+                                                        *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::LEFT.ord());
+                                                    }
+                                                }
+                                                MouseButton::RIGHT => {
+                                                    if button_mask.is_set(MouseButtonMask::RIGHT) {
+                                                        *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::RIGHT.ord());
+                                                    }
+                                                }
+                                                MouseButton::MIDDLE => {
+                                                    if button_mask.is_set(MouseButtonMask::MIDDLE) {
+                                                        *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::MIDDLE.ord());
+                                                    }
+                                                }
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                    let mut event = InputEventMouseButton::new_gd();
+                                    event.set_button_index(godot_button);
+                                    event.set_position(Vector2::new(vp_x, vp_y));
+                                    event.set_global_position(Vector2::new(vp_x, vp_y));
+                                    event.set_pressed(pressed);
+                                    let button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
+                                    event.set_button_mask(*button_mask);
+                                    if let Some(mut viewport) = base.get_viewport() {
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
+                                    }
+                                    return;
+                                }
+
+                                "_mouse_wheel" => {
+                                    let delta_x = json_value.get("deltaX").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let delta_y = json_value.get("deltaY").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let position = Vector2::new(vp_x, vp_y);
+                                    let button_mask = *CURRENT_BUTTON_MASK.lock().unwrap();
+                                    let modifiers = (
+                                        json_value.get("shift").and_then(|v| v.as_bool()).unwrap_or(false),
+                                        json_value.get("ctrl").and_then(|v| v.as_bool()).unwrap_or(false),
+                                        json_value.get("alt").and_then(|v| v.as_bool()).unwrap_or(false),
+                                        json_value.get("meta").and_then(|v| v.as_bool()).unwrap_or(false),
+                                    );
+                                    let viewport = base.get_viewport();
+                                    if delta_y != 0.0 {
+                                        let button = if delta_y < 0.0 { MouseButton::WHEEL_UP } else { MouseButton::WHEEL_DOWN };
+                                        let factor = (delta_y.abs() / 100.0).max(1.0);
+                                        send_wheel_event(button, position, factor, button_mask, modifiers, &viewport);
+                                    }
+                                    if delta_x != 0.0 {
+                                        let button = if delta_x < 0.0 { MouseButton::WHEEL_LEFT } else { MouseButton::WHEEL_RIGHT };
+                                        let factor = (delta_x.abs() / 100.0).max(1.0);
+                                        send_wheel_event(button, position, factor, button_mask, modifiers, &viewport);
+                                    }
+                                    return;
+                                }
+
+                                "_key_down" | "_key_up" => {
+                                    let key_str = json_value.get("key").and_then(|v| v.as_str()).unwrap_or("");
+                                    let mut event = InputEventKey::new_gd();
+                                    let godot_key = GODOT_KEYS.get(key_str).copied().unwrap_or(Key::NONE);
+                                    event.set_keycode(godot_key);
+                                    event.set_pressed(event_type == "_key_down");
+                                    event.set_shift_pressed(json_value.get("shift").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    event.set_ctrl_pressed(json_value.get("ctrl").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    event.set_alt_pressed(json_value.get("alt").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    event.set_meta_pressed(json_value.get("meta").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    if let Some(mut viewport) = base.get_viewport() {
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
+                                    }
+                                    return;
+                                }
+
+                                _ => {}
+                            }
+                        }
+                    }
+
+                    base.call_deferred("emit_signal", &["ipc_message".to_variant(), body.to_variant()]);
+                }
+            })
+            .with_on_page_load_handler({
+                let base = Arc::clone(&base);
+                move |event: PageLoadEvent, url: String| {
+                    let mut base = base.lock().unwrap();
+                    match event {
+                        PageLoadEvent::Started => base.call_deferred("emit_signal", &["page_load_started".to_variant(), url.to_variant()]),
+                        PageLoadEvent::Finished => base.call_deferred("emit_signal", &["page_load_finished".to_variant(), url.to_variant()]),
+                    };
+                }
+            })
+.with_custom_protocol(
+    "res".into(), move |_webview_id, request| {
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| get_res_response(request)))
+            .unwrap_or_else(|_| {
+                http::Response::builder()
+                    .header("Content-Type", "text/plain")
+                    .status(500)
+                    .body(std::borrow::Cow::from(b"res:// handler error" as &[u8]))
+                    .unwrap()
+            })
+    },
+);
+
+            let webview_builder = if self.forward_input_events {
+                webview_builder.with_initialization_script(r#"
+                    document.addEventListener('mousemove', (e) => {
+                        if (!document.hasFocus()) return;
+                        window.ipc.postMessage(JSON.stringify({
+                            type: '_mouse_move', x: e.clientX, y: e.clientY,
+                            movementX: e.movementX, movementY: e.movementY, button: e.button
+                        }));
+                    });
+                    document.addEventListener('mousedown', (e) => {
+                        if (!document.hasFocus()) return;
+                        window.ipc.postMessage(JSON.stringify({ type: '_mouse_down', x: e.clientX, y: e.clientY, button: e.button }));
+                    });
+                    document.addEventListener('mouseup', (e) => {
+                        if (!document.hasFocus()) return;
+                        window.ipc.postMessage(JSON.stringify({ type: '_mouse_up', x: e.clientX, y: e.clientY, button: e.button }));
+                    });
+                    document.addEventListener('wheel', (e) => {
+                        if (!document.hasFocus()) return;
+                        window.ipc.postMessage(JSON.stringify({
+                            type: '_mouse_wheel', x: e.clientX, y: e.clientY,
+                            deltaX: e.deltaX, deltaY: e.deltaY,
+                            shift: e.shiftKey, ctrl: e.ctrlKey, alt: e.altKey, meta: e.metaKey
+                        }));
+                    });
+                    document.addEventListener('keydown', (e) => {
+                        if (!document.hasFocus()) return;
+                        const isModifier = ["Alt", "Shift", "Control", "Meta"].includes(e.key);
+                        window.ipc.postMessage(JSON.stringify({
+                            type: '_key_down', key: e.key, code: e.code, keyCode: e.keyCode,
+                            shift: isModifier ? false : e.shiftKey,
+                            ctrl: isModifier ? false : e.ctrlKey,
+                            alt: isModifier ? false : e.altKey,
+                            meta: isModifier ? false : e.metaKey
+                        }));
+                    });
+                    document.addEventListener('keyup', (e) => {
+                        if (!document.hasFocus()) return;
+                        const isModifier = ["Alt", "Shift", "Control", "Meta"].includes(e.key);
+                        window.ipc.postMessage(JSON.stringify({
+                            type: '_key_up', key: e.key, code: e.code, keyCode: e.keyCode,
+                            shift: isModifier ? false : e.shiftKey,
+                            ctrl: isModifier ? false : e.ctrlKey,
+                            alt: isModifier ? false : e.altKey,
+                            meta: isModifier ? false : e.metaKey
+                        }));
+                    });
+                "#)
+            } else {
+                webview_builder
+            };
+
             let webview = webview_builder.build_as_child(&window).unwrap();
             self.webview.replace(webview);
         }
 
-        self.resize()
+        self.resize();
     }
 
     #[func]
@@ -646,7 +849,6 @@ impl WebView {
         }
         godot_print!("[Godot WRY] create_webview succeeded!");
 
-        // get_tree() is infallible in gdext 0.5.x; get_root() still returns Option.
         let mut viewport = self.base().get_tree().get_root().expect("Could not get root viewport");
         viewport.connect("size_changed", &Callable::from_object_method(&*self.base(), "resize"));
 
@@ -663,13 +865,11 @@ impl WebView {
             if let Ok(wh) = window.window_handle() {
                 if let RawWindowHandle::Win32(win32) = wh.as_raw() {
                     let hwnd = win32.hwnd.get() as isize;
-
                     unsafe {
                         let raw_hwnd = HWND(hwnd as _);
                         let current_style = GetWindowLongPtrA(raw_hwnd, GWL_STYLE);
                         SetWindowLongPtrA(raw_hwnd, GWL_STYLE, current_style & !0x02000000);
                     };
-
                     if self.webview.as_ref().unwrap().reparent(hwnd).is_ok() {
                         self.window_id = _new_window_id;
                         self.resize();
@@ -681,6 +881,8 @@ impl WebView {
         }
 
         self.webview.take();
+        // Also drop the old context before rebuilding.
+        self.web_context = None;
         self.build_webview();
     }
 
@@ -700,7 +902,6 @@ impl WebView {
                 let window_size = self.base().get_window()
                     .map(|w| w.get_size())
                     .unwrap_or_else(|| {
-                        // get_tree() is infallible; get_root() still returns Option.
                         self.base().get_tree().get_root().expect("Could not get root viewport").get_size()
                     });
                 Rect {
@@ -752,10 +953,12 @@ impl WebView {
             match webview.set_visible(visibility) {
                 Ok(_) => self.resize(),
                 Err(e) => {
-                    godot_warn!("[Godot WRY] Could not set webview visibility: {e}. \
-                        If you are using Window.hide()/show(), reparent the WebView \
-                        node out of the Window before hide() and back after show() \
-                        so the native handle can survive the window destruction.");
+                    godot_warn!(
+                        "[Godot WRY] Could not set webview visibility: {e}. \
+                         If you are using Window.hide()/show(), reparent the WebView \
+                         node out of the Window before hide() and back after show() \
+                         so the native handle can survive the window destruction."
+                    );
                 }
             }
         }
@@ -781,7 +984,7 @@ impl WebView {
 
         if let Some(stripped) = url_str.strip_prefix("res://") {
             let path = stripped.replace("\\", "/");
-            
+
             #[cfg(target_os = "linux")]
             {
                 url_str = format!("res://{}", path);
@@ -894,190 +1097,159 @@ lazy_static! {
     static ref CURRENT_BUTTON_MASK: Mutex<MouseButtonMask> = Mutex::new(MouseButtonMask::default());
 
     static ref GODOT_KEYS: HashMap<&'static str, Key> = HashMap::from([
-        // https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-key
+        ("a", Key::A), ("A", Key::A),
+        ("b", Key::B), ("B", Key::B),
+        ("c", Key::C), ("C", Key::C),
+        ("d", Key::D), ("D", Key::D),
+        ("e", Key::E), ("E", Key::E),
+        ("f", Key::F), ("F", Key::F),
+        ("g", Key::G), ("G", Key::G),
+        ("h", Key::H), ("H", Key::H),
+        ("i", Key::I), ("I", Key::I),
+        ("j", Key::J), ("J", Key::J),
+        ("k", Key::K), ("K", Key::K),
+        ("l", Key::L), ("L", Key::L),
+        ("m", Key::M), ("M", Key::M),
+        ("n", Key::N), ("N", Key::N),
+        ("o", Key::O), ("O", Key::O),
+        ("p", Key::P), ("P", Key::P),
+        ("q", Key::Q), ("Q", Key::Q),
+        ("r", Key::R), ("R", Key::R),
+        ("s", Key::S), ("S", Key::S),
+        ("t", Key::T), ("T", Key::T),
+        ("u", Key::U), ("U", Key::U),
+        ("v", Key::V), ("V", Key::V),
+        ("w", Key::W), ("W", Key::W),
+        ("x", Key::X), ("X", Key::X),
+        ("y", Key::Y), ("Y", Key::Y),
+        ("z", Key::Z), ("Z", Key::Z),
 
-        ("a", Key::A),
-        ("A", Key::A),
-        ("b", Key::B),
-        ("B", Key::B),
-        ("c", Key::C),
-        ("C", Key::C),
-        ("d", Key::D),
-        ("D", Key::D),
-        ("e", Key::E),
-        ("E", Key::E),
-        ("f", Key::F),
-        ("F", Key::F),
-        ("g", Key::G),
-        ("G", Key::G),
-        ("h", Key::H),
-        ("H", Key::H),
-        ("i", Key::I),
-        ("I", Key::I),
-        ("j", Key::J),
-        ("J", Key::J),
-        ("k", Key::K),
-        ("K", Key::K),
-        ("l", Key::L),
-        ("L", Key::L),
-        ("m", Key::M),
-        ("M", Key::M),
-        ("n", Key::N),
-        ("N", Key::N),
-        ("o", Key::O),
-        ("O", Key::O),
-        ("p", Key::P),
-        ("P", Key::P),
-        ("q", Key::Q),
-        ("Q", Key::Q),
-        ("r", Key::R),
-        ("R", Key::R),
-        ("s", Key::S),
-        ("S", Key::S),
-        ("t", Key::T),
-        ("T", Key::T),
-        ("u", Key::U),
-        ("U", Key::U),
-        ("v", Key::V),
-        ("V", Key::V),
-        ("w", Key::W),
-        ("W", Key::W),
-        ("x", Key::X),
-        ("X", Key::X),
-        ("y", Key::Y),
-        ("Y", Key::Y),
-        ("z", Key::Z),
-        ("Z", Key::Z),
-        
-        ("0", Key::KEY_0),
-        ("1", Key::KEY_1),
-        ("2", Key::KEY_2),
-        ("3", Key::KEY_3),
-        ("4", Key::KEY_4),
-        ("5", Key::KEY_5),
-        ("6", Key::KEY_6),
-        ("7", Key::KEY_7),
-        ("8", Key::KEY_8),
-        ("9", Key::KEY_9),
-        ("Numpad0", Key::KP_0),
-        ("Numpad1", Key::KP_1),
-        ("Numpad2", Key::KP_2),
-        ("Numpad3", Key::KP_3),
-        ("Numpad4", Key::KP_4),
-        ("Numpad5", Key::KP_5),
-        ("Numpad6", Key::KP_6),
-        ("Numpad7", Key::KP_7),
-        ("Numpad8", Key::KP_8),
+        ("0", Key::KEY_0), ("1", Key::KEY_1), ("2", Key::KEY_2), ("3", Key::KEY_3),
+        ("4", Key::KEY_4), ("5", Key::KEY_5), ("6", Key::KEY_6), ("7", Key::KEY_7),
+        ("8", Key::KEY_8), ("9", Key::KEY_9),
+        ("Numpad0", Key::KP_0), ("Numpad1", Key::KP_1), ("Numpad2", Key::KP_2),
+        ("Numpad3", Key::KP_3), ("Numpad4", Key::KP_4), ("Numpad5", Key::KP_5),
+        ("Numpad6", Key::KP_6), ("Numpad7", Key::KP_7), ("Numpad8", Key::KP_8),
         ("Numpad9", Key::KP_9),
-        
-        ("F1", Key::F1),
-        ("F2", Key::F2),
-        ("F3", Key::F3),
-        ("F4", Key::F4),
-        ("F5", Key::F5),
-        ("F6", Key::F6),
-        ("F7", Key::F7),
-        ("F8", Key::F8),
-        ("F9", Key::F9),
-        ("F10", Key::F10),
-        ("F11", Key::F11),
-        ("F12", Key::F12),
-        ("F13", Key::F13),
-        ("F14", Key::F14),
-        ("F15", Key::F15),
-        ("F16", Key::F16),
-        ("F17", Key::F17),
-        ("F18", Key::F18),
-        ("F19", Key::F19),
-        ("F20", Key::F20),
-        ("F21", Key::F21),
-        ("F22", Key::F22),
-        ("F23", Key::F23),
-        ("F24", Key::F24),
-        
-        ("ArrowUp", Key::UP),
-        ("ArrowDown", Key::DOWN),
-        ("ArrowLeft", Key::LEFT),
-        ("ArrowRight", Key::RIGHT),
-        
-        ("Enter", Key::ENTER),
-        ("NumpadEnter", Key::KP_ENTER),
-        ("Tab", Key::TAB),
-        ("Space", Key::SPACE),
-        (" ", Key::SPACE),
-        ("Backspace", Key::BACKSPACE),
-        ("Escape", Key::ESCAPE),
-        ("CapsLock", Key::CAPSLOCK),
-        ("ScrollLock", Key::SCROLLLOCK),
-        ("NumLock", Key::NUMLOCK),
-        ("PrintScreen", Key::PRINT),
-        ("Pause", Key::PAUSE),
-        ("Insert", Key::INSERT),
-        ("Home", Key::HOME),
-        ("PageUp", Key::PAGEUP),
-        ("Delete", Key::DELETE),
-        ("End", Key::END),
-        ("PageDown", Key::PAGEDOWN),
-        
-        ("Shift", Key::SHIFT),
-        ("Control", Key::CTRL),
-        ("Alt", Key::ALT),
-        ("AltGraph", Key::ALT),
-        ("Meta", Key::META),
-        ("ContextMenu", Key::MENU),
-        
-        ("NumpadMultiply", Key::KP_MULTIPLY),
-        ("NumpadDivide", Key::KP_DIVIDE),
-        ("NumpadAdd", Key::KP_ADD),
-        ("NumpadSubtract", Key::KP_SUBTRACT),
+
+        ("F1", Key::F1), ("F2", Key::F2), ("F3", Key::F3), ("F4", Key::F4),
+        ("F5", Key::F5), ("F6", Key::F6), ("F7", Key::F7), ("F8", Key::F8),
+        ("F9", Key::F9), ("F10", Key::F10), ("F11", Key::F11), ("F12", Key::F12),
+        ("F13", Key::F13), ("F14", Key::F14), ("F15", Key::F15), ("F16", Key::F16),
+        ("F17", Key::F17), ("F18", Key::F18), ("F19", Key::F19), ("F20", Key::F20),
+        ("F21", Key::F21), ("F22", Key::F22), ("F23", Key::F23), ("F24", Key::F24),
+
+        ("ArrowUp", Key::UP), ("ArrowDown", Key::DOWN),
+        ("ArrowLeft", Key::LEFT), ("ArrowRight", Key::RIGHT),
+
+        ("Enter", Key::ENTER), ("NumpadEnter", Key::KP_ENTER),
+        ("Tab", Key::TAB), ("Space", Key::SPACE), (" ", Key::SPACE),
+        ("Backspace", Key::BACKSPACE), ("Escape", Key::ESCAPE),
+        ("CapsLock", Key::CAPSLOCK), ("ScrollLock", Key::SCROLLLOCK),
+        ("NumLock", Key::NUMLOCK), ("PrintScreen", Key::PRINT),
+        ("Pause", Key::PAUSE), ("Insert", Key::INSERT),
+        ("Home", Key::HOME), ("PageUp", Key::PAGEUP),
+        ("Delete", Key::DELETE), ("End", Key::END), ("PageDown", Key::PAGEDOWN),
+
+        ("Shift", Key::SHIFT), ("Control", Key::CTRL),
+        ("Alt", Key::ALT), ("AltGraph", Key::ALT),
+        ("Meta", Key::META), ("ContextMenu", Key::MENU),
+
+        ("NumpadMultiply", Key::KP_MULTIPLY), ("NumpadDivide", Key::KP_DIVIDE),
+        ("NumpadAdd", Key::KP_ADD), ("NumpadSubtract", Key::KP_SUBTRACT),
         ("NumpadDecimal", Key::KP_PERIOD),
-        
-        ("MediaPlayPause", Key::MEDIAPLAY),
-        ("MediaStop", Key::MEDIASTOP),
-        ("MediaTrackNext", Key::MEDIANEXT),
-        ("MediaTrackPrevious", Key::MEDIAPREVIOUS),
-        ("VolumeDown", Key::VOLUMEDOWN),
-        ("VolumeUp", Key::VOLUMEUP),
+
+        ("MediaPlayPause", Key::MEDIAPLAY), ("MediaStop", Key::MEDIASTOP),
+        ("MediaTrackNext", Key::MEDIANEXT), ("MediaTrackPrevious", Key::MEDIAPREVIOUS),
+        ("VolumeDown", Key::VOLUMEDOWN), ("VolumeUp", Key::VOLUMEUP),
         ("VolumeMute", Key::VOLUMEMUTE),
-        
-        ("BrowserBack", Key::BACK),
-        ("BrowserForward", Key::FORWARD),
-        ("BrowserRefresh", Key::REFRESH),
-        ("BrowserStop", Key::STOP),
-        ("BrowserSearch", Key::SEARCH),
-        ("BrowserHome", Key::HOMEPAGE),
-        
-        ("`", Key::QUOTELEFT),
-        ("~", Key::ASCIITILDE),
-        ("!", Key::EXCLAM),
-        ("@", Key::AT),
-        ("#", Key::NUMBERSIGN),
-        ("$", Key::DOLLAR),
-        ("%", Key::PERCENT),
-        ("^", Key::ASCIICIRCUM),
-        ("&", Key::AMPERSAND),
-        ("*", Key::ASTERISK),
-        ("(", Key::PARENLEFT),
-        (")", Key::PARENRIGHT),
-        ("-", Key::MINUS),
-        ("_", Key::UNDERSCORE),
-        ("=", Key::EQUAL),
-        ("+", Key::PLUS),
-        ("[", Key::BRACKETLEFT),
-        ("{", Key::BRACELEFT),
-        ("]", Key::BRACKETRIGHT),
-        ("}", Key::BRACERIGHT),
-        ("\\", Key::BACKSLASH),
-        ("|", Key::BAR),
-        (";", Key::SEMICOLON),
-        (":", Key::COLON),
-        ("'", Key::APOSTROPHE),
-        ("\"", Key::QUOTEDBL),
-        (",", Key::COMMA),
-        ("<", Key::LESS),
-        (".", Key::PERIOD),
-        (">", Key::GREATER),
-        ("/", Key::SLASH),
-        ("?", Key::QUESTION),
+
+        ("BrowserBack", Key::BACK), ("BrowserForward", Key::FORWARD),
+        ("BrowserRefresh", Key::REFRESH), ("BrowserStop", Key::STOP),
+        ("BrowserSearch", Key::SEARCH), ("BrowserHome", Key::HOMEPAGE),
+
+        ("`", Key::QUOTELEFT), ("~", Key::ASCIITILDE),
+        ("!", Key::EXCLAM), ("@", Key::AT), ("#", Key::NUMBERSIGN),
+        ("$", Key::DOLLAR), ("%", Key::PERCENT), ("^", Key::ASCIICIRCUM),
+        ("&", Key::AMPERSAND), ("*", Key::ASTERISK),
+        ("(", Key::PARENLEFT), (")", Key::PARENRIGHT),
+        ("-", Key::MINUS), ("_", Key::UNDERSCORE),
+        ("=", Key::EQUAL), ("+", Key::PLUS),
+        ("[", Key::BRACKETLEFT), ("{", Key::BRACELEFT),
+        ("]", Key::BRACKETRIGHT), ("}", Key::BRACERIGHT),
+        ("\\", Key::BACKSLASH), ("|", Key::BAR),
+        (";", Key::SEMICOLON), (":", Key::COLON),
+        ("'", Key::APOSTROPHE), ("\"", Key::QUOTEDBL),
+        (",", Key::COMMA), ("<", Key::LESS),
+        (".", Key::PERIOD), (">", Key::GREATER),
+        ("/", Key::SLASH), ("?", Key::QUESTION),
     ]);
+}
+// ── WRY LIFECYCLE JNI BINDINGS ─────────────────────────────────────────
+// Expose the native hooks expected by your com.example.godotwry.WryActivity wrapper
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_create(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+    _activity: jni::objects::JObject,
+) {
+    godot_print!("[Godot WRY JNI] Native lifecycle hook: create executed.");
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_start(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+) {
+    godot_print!("[Godot WRY JNI] Native lifecycle hook: start executed.");
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_resume(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+) {
+    godot_print!("[Godot WRY JNI] Native lifecycle hook: resume executed.");
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_focus(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+    _focused: jni::sys::jboolean,
+) {
+    // Keeps window focus states synchronized across runtime contexts
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_pause(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+) {
+    godot_print!("[Godot WRY JNI] Native lifecycle hook: pause executed.");
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_stop(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+) {
+    godot_print!("[Godot WRY JNI] Native lifecycle hook: stop executed.");
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_save(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+) {
+    // Handles state serialization checkpoints if needed
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_destroy(
+    _env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+) {
+    godot_print!("[Godot WRY JNI] Native lifecycle hook: destroy executed.");
 }

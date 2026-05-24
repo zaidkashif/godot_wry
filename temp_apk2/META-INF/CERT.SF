@@ -1,0 +1,1143 @@
+Signature-Version: 1.0
+Created-By: Android Gradle 8.2.0
+SHA-256-Digest-Manifest: yYSTpqDXMITTuOEGCxHSrKlnJNyWP47tpRGJxzS0G3o=
+X-Android-APK-Signed: 2
+
+Name: AndroidManifest.xml
+SHA-256-Digest: OwM8peAbpFSVeiSMtsabYJI8g3YHz8ZUmGrNPYdQUug=
+
+Name: DebugProbesKt.bin
+SHA-256-Digest: f1VLL3ND49UIB8KI6Qz30xG64Fz+tJnIVlR2zwEcJAM=
+
+Name: META-INF/androidx.activity_activity.version
+SHA-256-Digest: 04v+PAeIys2dDL9tRHpx9hLCjbi9YfJtGnQfHLQrM/g=
+
+Name: META-INF/androidx.annotation_annotation-experimental.version
+SHA-256-Digest: 1kXi7X+0fkUVZdpJPpZVPjKTkWzOkOQjS1yiM1Loq+s=
+
+Name: META-INF/androidx.arch.core_core-runtime.version
+SHA-256-Digest: Xk4gTfXbSoRbgEIAb7dJD1H+qZ+KHFOrQAuZz81pi5U=
+
+Name: META-INF/androidx.core_core-ktx.version
+SHA-256-Digest: DLS4MwsSg4dmMziL5d6aG7v+dYY5KFnd0lh9sVDgZ9Q=
+
+Name: META-INF/androidx.core_core.version
+SHA-256-Digest: jg5oXyk2pmR+2LKLwHZWWnadhOxbOkL4uECJ+Oo6mJA=
+
+Name: META-INF/androidx.customview_customview.version
+SHA-256-Digest: sBXfV6fOpm4gx92kOvMmYlDyT3/2yEwDvZwNUXog7ZY=
+
+Name: META-INF/androidx.fragment_fragment.version
+SHA-256-Digest: 7KSDVptW/78JbiJrRBZM1g9g5EXEeJSPytL9Si1LuT0=
+
+Name: META-INF/androidx.lifecycle_lifecycle-livedata-core.version
+SHA-256-Digest: E8cIYkEealcOFzxGMg5xhOnTbk7g3W9ZU1dM703OTUQ=
+
+Name: META-INF/androidx.lifecycle_lifecycle-livedata.version
+SHA-256-Digest: /Q3gyGgaokN1fug5gDx1+yKezMDXo2Vw1G+aBmBmIcs=
+
+Name: META-INF/androidx.lifecycle_lifecycle-runtime.version
+SHA-256-Digest: 8meXHK6M6JVL79XSrLYCvI3YWHkNe0BmbQI91mzrLgg=
+
+Name: META-INF/androidx.lifecycle_lifecycle-viewmodel-savedstate.versi
+ on
+SHA-256-Digest: J14A0CzPS3jnxvXmft5e5quhAiDrSqRpOYPoieF6KwM=
+
+Name: META-INF/androidx.lifecycle_lifecycle-viewmodel.version
+SHA-256-Digest: AY+3dVTJ6a9piGPUjPhrAQ/YtLGcC/LSJw9V3Yewj/I=
+
+Name: META-INF/androidx.loader_loader.version
+SHA-256-Digest: U/8Mggt0wI0pqD9haINJnmP8D0bZQQ02nLntwOd7zfc=
+
+Name: META-INF/androidx.profileinstaller_profileinstaller.version
+SHA-256-Digest: pnNtSzot9NG0OYXc82DsaO8bLbqoTy5Hcpe9+upL6oY=
+
+Name: META-INF/androidx.savedstate_savedstate.version
+SHA-256-Digest: oUrCOrSuWLFGZkgyZ1Kl35SmYjcht2O7omY+RLYD8JU=
+
+Name: META-INF/androidx.startup_startup-runtime.version
+SHA-256-Digest: WApCl2ZQ73cErBtpLBlMhj7v1xXQneilC5gXW/J6Ld0=
+
+Name: META-INF/androidx.tracing_tracing.version
+SHA-256-Digest: JH1h4G4PJTQ7Lfk4BRGypl727qvMGl63/MF/nb+FB0Y=
+
+Name: META-INF/androidx.versionedparcelable_versionedparcelable.versio
+ n
+SHA-256-Digest: s/0pgtuKcRTX+BvAcqcODytXp6q48QathsOscGo3Zzg=
+
+Name: META-INF/androidx.viewpager_viewpager.version
+SHA-256-Digest: vU90lQInBk3t53YggAT4tlv1ISvSbqeBYu+DYpKtTeQ=
+
+Name: META-INF/androidx.webkit_webkit.version
+SHA-256-Digest: wKLDzGOjCzw4EE1tkmnZTaoDVmRyjs0pVEzTk39Jz8Y=
+
+Name: META-INF/com/android/build/gradle/app-metadata.properties
+SHA-256-Digest: 9XQjQ3EtWaKxCvWljNw5r3sPDmfwYlP3Lb/Kd6EkOw8=
+
+Name: META-INF/kotlinx_coroutines_android.version
+SHA-256-Digest: WrwvG1dlXBDo+l6OUx7RvnZySNm8nnKhjZqtPe9yV64=
+
+Name: META-INF/kotlinx_coroutines_core.version
+SHA-256-Digest: WMiDZRbFfBa51tSYjNXwPtwxNWTwizmSAlqXS+/Qd3o=
+
+Name: META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler
+SHA-256-Digest: mtzAhgWWbt+0H02kt4daMxSOhqxKfAGqpoJ3TAIFR3Q=
+
+Name: META-INF/services/kotlinx.coroutines.internal.MainDispatcherFact
+ ory
+SHA-256-Digest: CvpiKzNhVHqONkAL//lJVL9QOZGQGXeAZRDX9l7tM4E=
+
+Name: assets/.godot/exported/133200997/export-0b3e8c003abe57a6163c5596
+ 6312ea76-MatShorts.res
+SHA-256-Digest: Q9+0+D2d9nO2ie1zbD/tzyMfgLevAUtJ7OYqtTJzGvg=
+
+Name: assets/.godot/exported/133200997/export-0f844a7f7ad1b61149f0b24b
+ 816785de-MatShirt01-Color.res
+SHA-256-Digest: 0TnixP2SjuBBTHvCJwHMC5MOdW2MPkP2eiAZ0s9kdxw=
+
+Name: assets/.godot/exported/133200997/export-1e288689effcbc175cf78b1e
+ 20941c3f-MatShoelaces.res
+SHA-256-Digest: N4gKgefcxN+f5erWzTqycEB/ds2qnDXDp8SEBNfimYw=
+
+Name: assets/.godot/exported/133200997/export-279eb53245312d13c0dc4569
+ 8efecb58-MatNose.res
+SHA-256-Digest: C0BzkA+nakT6p4Ke/ooOwU9Kmyv76Xbk1G9Ra53I3Hg=
+
+Name: assets/.godot/exported/133200997/export-2cf76e1cbc00643f5532f9c9
+ 771db1ca-MatHatLogo.res
+SHA-256-Digest: EvevXgfJoM3nBNPLfE7Imy+rObflbZYwtWwqieXl4zE=
+
+Name: assets/.godot/exported/133200997/export-44a7686dc1a3dd8c46041afa
+ 619cbdc2-MatDress.res
+SHA-256-Digest: YYdH7jQEh38K05itQIkVQvHotGGe4qAd+KazxcZ4Ml4=
+
+Name: assets/.godot/exported/133200997/export-4bbe14662d06debfcdb6c049
+ 446cc898-MatJeans2.res
+SHA-256-Digest: LMQvinULFUy2oThzbrXx+pY/SfN34JRYqoFZx3qwr8Y=
+
+Name: assets/.godot/exported/133200997/export-5b23ba27078932f5f634a565
+ 02f313fe-MatEye.res
+SHA-256-Digest: AhkoO/JSSXQzHp5l2iqG+gFMXPbBXjXc4DW1Seq86gE=
+
+Name: assets/.godot/exported/133200997/export-5fbc272896f15635dea7daa2
+ 3167d026-MatShoes.res
+SHA-256-Digest: CHzuyVUeU+tOYHFSF41RMcumeAfCSLkjggBpLRh+6o4=
+
+Name: assets/.godot/exported/133200997/export-61c039c2a3fc11ee3a8ee05b
+ 0a1b51db-MatSkirt.res
+SHA-256-Digest: nqtDFMCGWR/ij9hvaQebiC0RcjEKnxLgJOkgk89yUqQ=
+
+Name: assets/.godot/exported/133200997/export-62a5b2da937acb365b3de9e0
+ 98d778a2-MatNecklace.res
+SHA-256-Digest: 7STSp0HQ/0vbVq/leB+ZLieWX7wSCfixljf14qiwvLY=
+
+Name: assets/.godot/exported/133200997/export-6afa81b065c5572e95492aa9
+ 1511c8c7-MatHatCap.res
+SHA-256-Digest: Ga8ai1LrRtsWxz3HhS9QpCuOQcInEy9tCFlwcfzY9zk=
+
+Name: assets/.godot/exported/133200997/export-7733eaa842809794f7ea84d7
+ f4f7e590-MaCatEarsInner3.res
+SHA-256-Digest: kWAouRfJ04bXA6A981UQbkmhWWgYHsjQIr4FkCusAwM=
+
+Name: assets/.godot/exported/133200997/export-9031bc9fb242a04b32f19c90
+ be34ec3c-MatJeans.res
+SHA-256-Digest: ph103YJtHIam1yuuMdMduBzUANSLXbV+s2iwtb9uWyI=
+
+Name: assets/.godot/exported/133200997/export-94b4da8a9d827719c304004b
+ e7fbb18f-MatCatEars.res
+SHA-256-Digest: EeU8hScq/T82AZEjiU+s/PvYga6H2yJ0NlM8HuGdFZ8=
+
+Name: assets/.godot/exported/133200997/export-9edd0f6e84953203ed892e65
+ fec36706-Hair.res
+SHA-256-Digest: dAgGsvsLrUP/wVfvPIAiDjPP4KT4pEDU2F/EaRco94A=
+
+Name: assets/.godot/exported/133200997/export-a4e5c094054e4517cb3af683
+ 51fa4028-Glasses.res
+SHA-256-Digest: 6ozL05V6JCCFDBYbMF3AGeoefkuXrAKZSfmG99viDC8=
+
+Name: assets/.godot/exported/133200997/export-ad1b78325258825ce91c58c3
+ 0cb39ed3-MatShirt02.res
+SHA-256-Digest: 5zzyekryfNkI2auIVfeo02UN+PBbOeNMcreeAomN+yg=
+
+Name: assets/.godot/exported/133200997/export-ad5d45ec4992474cfb2da389
+ e6bc3992-MatEyeBlack.res
+SHA-256-Digest: QGOMtNhSsLYXzzTn4dZeQF9dMHRPxC1zzSx2M3RgErY=
+
+Name: assets/.godot/exported/133200997/export-bb286061966eb66ea419dff4
+ 9746132c-MatUnderShirt.res
+SHA-256-Digest: WEFmfyiunlivrFMN8OOb13guZ2IjefgqrmIdJTYiAIM=
+
+Name: assets/.godot/exported/133200997/export-c24884a893316bd671a75857
+ ee68f19e-MatShirt01.res
+SHA-256-Digest: m+zCR0dal8L0uTYrOxs7Wpy5VwYUV9k1oI3/M8MvEL0=
+
+Name: assets/.godot/exported/133200997/export-cff6affb17b200d524284dd3
+ 2f3320f3-MatFace.res
+SHA-256-Digest: KwgRER/HMdLJIMTHAkuSyM6tNq2zeF0/SDQuTh22zdc=
+
+Name: assets/.godot/exported/133200997/export-de4e15aed9231c6121abb698
+ 00e254b7-MatHat.res
+SHA-256-Digest: T/iKtT4ftwBaiCEF0XRLBiS8gong35/dJtIIjOqIw6w=
+
+Name: assets/.godot/exported/133200997/export-df83fbf3ef0cb252073bbaa2
+ 00f38891-MatCatEarsInner2.res
+SHA-256-Digest: 5U1HZxyyhgfUco/ZQa37QTPISwVElU4LWtkBEqq0keM=
+
+Name: assets/.godot/exported/133200997/export-e9acb67b30198deb8d087248
+ 045d7e6d-example.scn
+SHA-256-Digest: SjSr6NRQXmY+gtX5MEg4R0dya8hW6fTxtU+1F0XdZ5M=
+
+Name: assets/.godot/exported/133200997/export-ed22ed7013a9803c22eb815a
+ dfbc31ef-MatBody.res
+SHA-256-Digest: gUkStF2N5F3jwy9Kpim4xpc87w+gm/uFdQ8tW+3NVaU=
+
+Name: assets/.godot/exported/133200997/export-f0ea39b8ec3bb8a80e152b8a
+ a0fa9d98-MatBoots2.res
+SHA-256-Digest: bDIVb96TjaLlz+UrrJDf05NnCLnjJwt+Gvq8YCTPmQQ=
+
+Name: assets/.godot/exported/133200997/export-f3636863c0ea5a88d5c9650a
+ a2529568-MatBoots.res
+SHA-256-Digest: IGoYKFWUFgH+5X5vgAEBqqOVknj+n/rX6ts8G55Ku78=
+
+Name: assets/.godot/exported/133200997/export-fdc2c401180d681ecb9b9255
+ 3d8e0762-character_creator.scn
+SHA-256-Digest: Bs5l4taRvzwzaBzhua4TBQGY8XeY22sGinqDdYkwMjY=
+
+Name: assets/.godot/exported/133200997/export-fddaec952ad2fef684631b0f
+ f0b0897a-MatCatEarsInner.res
+SHA-256-Digest: EZXL9VgFdusj2HtRWeheiX3aBh2AssNjlqYFSnl5s+8=
+
+Name: assets/.godot/extension_list.cfg
+SHA-256-Digest: cuUgWDRUzZW23XsVpqQX2olfelJ/m5S07BOLk/oGxF8=
+
+Name: assets/.godot/global_script_class_cache.cfg
+SHA-256-Digest: Qku0fJgXA5sRrbShn1W6IVjE/xUdtbPpSQVTTKGWi7k=
+
+Name: assets/.godot/imported/accessories-cap.png-a1e63b6276dad8626f064
+ 17a3956be55.ctex
+SHA-256-Digest: I7+ebyLdH9f5/AnZyhy7YnXnwcO2M0nDQVTGHWKaC+A=
+
+Name: assets/.godot/imported/accessories-cap.png-d1d3af1f35ecb26a83f06
+ d6d023ce968.ctex
+SHA-256-Digest: elpJBS+v8vmthcgehZ1ZXL1pIjF4hyx7KVgzgxyUyTM=
+
+Name: assets/.godot/imported/accessories-cat_ears.png-340f678bb134156f
+ 2eefac662089505d.ctex
+SHA-256-Digest: 8nIDPCAYPf+ej1vyX57XdajMbEMY6dqjfTafXvsWaaU=
+
+Name: assets/.godot/imported/accessories-cat_ears.png-fbb8ec6608f6564e
+ 1593a926127578ed.ctex
+SHA-256-Digest: 1Qdu6xhNFgo0HbmUpxMMGLTE0DCqEMxhhH6If3Nxhug=
+
+Name: assets/.godot/imported/accessories-glasses.png-1e0e66aa63634986e
+ 71c4b7a0dc15814.ctex
+SHA-256-Digest: PZF1awNyxq8HJc3UxRI10yfnkhM0PoP617O8U19/KRA=
+
+Name: assets/.godot/imported/accessories-glasses.png-4d712137c37056fc5
+ 19b322b6c79f8e6.ctex
+SHA-256-Digest: fN0JhZ05Cxu/W5h/sjgJz98JufAvN9DNTXf7YSLY8FY=
+
+Name: assets/.godot/imported/bottom-pants.png-86fbba086e5df78310b5d61e
+ 24b00732.ctex
+SHA-256-Digest: hFZ4qBOby4MwfLHRPukZnzNHQSlXzU1UfihcL253v3s=
+
+Name: assets/.godot/imported/bottom-pants.png-8b1b9de12f714730115f2ebc
+ 543f2c6e.ctex
+SHA-256-Digest: xS2qaBOA9lUsgFReCYlbhsuXkVA01kpDC47Ty8NFCMs=
+
+Name: assets/.godot/imported/bottom-shorts.png-78ecf5c46d8a0e879e4e1ce
+ 55d3b84be.ctex
+SHA-256-Digest: Um7QnPmG3UJ1xYQtZW5a5WXmgVoKKh8yAPRMUnObkIs=
+
+Name: assets/.godot/imported/bottom-shorts.png-f6835ef421c2b40aa88a953
+ 2c0b4757d.ctex
+SHA-256-Digest: DiIGKRZmgh7TudPd+zdziTJdijSgPSk9jmWj50thA4I=
+
+Name: assets/.godot/imported/bottom-skirt.png-4a5394ccb7503146885586de
+ 7957e8ad.ctex
+SHA-256-Digest: 06uE+gdG50I8iLyW3n6OQaH+jnBMFEmix+YS7/x/JBU=
+
+Name: assets/.godot/imported/bottom-skirt.png-ba1531001ddd3933e8455781
+ 25e5178c.ctex
+SHA-256-Digest: 3nUXD5FKeQgjsPuxBZB4BHJ9y9fOjzKI6hcT4xwJ79A=
+
+Name: assets/.godot/imported/cas_gradient.jpg-23b5913f9cc1eb158e3e6d9e
+ f4f2de5f.ctex
+SHA-256-Digest: 5LyIQ4IQ+BBsfGGmwWOs3jQEpJPt4FPMyjOywTvX+7w=
+
+Name: assets/.godot/imported/character.glb-be11b3e34d69ccea7a5576e55e5
+ 58e33.scn
+SHA-256-Digest: DFKz+/vwApXpFf9fVLpQ1aNWaGKQKeCdrz54ZXwyaf8=
+
+Name: assets/.godot/imported/character_bubbles-tex-alpha.png-8c0ce714b
+ 33973cdea1a1bfda064c35b.etc2.ctex
+SHA-256-Digest: 12feh9lHMDJRr/EJLBTwvqNC99VOcHBvjKakj+KsUfk=
+
+Name: assets/.godot/imported/character_face-tex.png-01c53d6145ab725ddd
+ 5d34eaaf290b5f.etc2.ctex
+SHA-256-Digest: GwiJZ5GLEbNZ5DSpTVbUk5OLkcMIsFpfCy/zVpsHCwc=
+
+Name: assets/.godot/imported/character_godotlogo-tex.png-dd99bc793f604
+ 58f275c2b5aa25d0d27.etc2.ctex
+SHA-256-Digest: VIdpLGsWZ8dZgXaz/qUdFKZxpRQJfH44awl75csBUzk=
+
+Name: assets/.godot/imported/character_horizontalines-tex.png-00c83ed2
+ 0edf03a7f314285ccd848c1a.etc2.ctex
+SHA-256-Digest: jYrtaEAZXqMLUlcKoYiy1SpTWjmMiLUz3qdAiheKdjI=
+
+Name: assets/.godot/imported/character_jeans-tex.webp-8da9225981b68214
+ b67817c3b956047c.etc2.ctex
+SHA-256-Digest: lEu6QcXrd7yD8NM0QQ3cPoU4trueKiFZKmRoAeCzS50=
+
+Name: assets/.godot/imported/character_necklace.png-a2c2e94f43857438b7
+ 3f1ac69fe980db.etc2.ctex
+SHA-256-Digest: Y/FQQgtKPB+oR/W3ocJ3M/9wkufQjf/V6WzU1iFFpMM=
+
+Name: assets/.godot/imported/character_shoelace-alpha2.png-e41586c70df
+ b1dea726b6b139cafd298.etc2.ctex
+SHA-256-Digest: +F7P4ViSoRuV5NmQ2j2E+w5tZmNcxf9XwW9MWT+FxuM=
+
+Name: assets/.godot/imported/character_short-txt2.png-5b90ae1cfff87f53
+ 6dc0dd521ea1392e.etc2.ctex
+SHA-256-Digest: Rb4nZb35E3+TJuTlEU/07TuxIGty5hMAa0dom6mB22M=
+
+Name: assets/.godot/imported/character_skirt-tex.png-269042355f20853b8
+ 5c28ff0dc2ae2ac.etc2.ctex
+SHA-256-Digest: 6fm638ZaXgEz6511FBMFCA7STozqO/oBp1sgVL47J6c=
+
+Name: assets/.godot/imported/character_triangles-pattern-inverted-tex.
+ png-95acb624222a84d95df01534b14e38f0.etc2.ctex
+SHA-256-Digest: Relf//gZRazOtu5AEfWlgXrnw80xmN1sI97X5j8WMEQ=
+
+Name: assets/.godot/imported/character_wool-tex.png-09a17b14f5be6082cb
+ 7fa1a6056e2ef0.etc2.ctex
+SHA-256-Digest: F69bmxLSy5TUV4vrL6mDAPl7KlprCxFnkcW7S2Wwkgo=
+
+Name: assets/.godot/imported/eyes-a.png-12150689b9cb6d1ccd8717ed70a8fc
+ 77.ctex
+SHA-256-Digest: BDqUh/CyERBL9ZkWpJr/AvJZEGaq/DaH9WQLesvlhis=
+
+Name: assets/.godot/imported/eyes-a.png-fddc61da62144c202af3a3b9cc5111
+ 89.ctex
+SHA-256-Digest: 0KwUqnq4sCTv2IHqTRqyNmfMvNYrPPZ4mm3y/a/x5nY=
+
+Name: assets/.godot/imported/eyes-b.png-50aa6b0b89129b98b312a2e2875c09
+ 08.ctex
+SHA-256-Digest: ngX4TualsWlrWBK1GlPqKqx4VFjbaYjXyQhPfFTLJMc=
+
+Name: assets/.godot/imported/eyes-b.png-e88f50ef08f384e2260be6b1f27c86
+ 2d.ctex
+SHA-256-Digest: Ry2SWukw0zzWgbyGb9qWucZP+JSt8da19Cxph/lr6EU=
+
+Name: assets/.godot/imported/favicon.png-de1c2341c7502a9f77050d5a6c970
+ 861.ctex
+SHA-256-Digest: LnjlJjJPtAIwDEw+4RPjHcwJAEJdF5yLl5a6oDh3T3g=
+
+Name: assets/.godot/imported/favicon.png-e658004e9632384c593d86b485416
+ 2f4.ctex
+SHA-256-Digest: YJwTCA7PY38r/oZv7Ebit9UThYHG9pMmOs1pjTTRGXI=
+
+Name: assets/.godot/imported/hair-long.png-a747ec729cf1e3ac87b8faadbf4
+ 812fa.ctex
+SHA-256-Digest: fxQTqG4Yb6iHhKa3rZCHa6PFxvuXUqp+Gn6E75GdGXI=
+
+Name: assets/.godot/imported/hair-long.png-e394d552d2e7e120806f430b5e8
+ 26f06.ctex
+SHA-256-Digest: u6aKhOzDLE7T0f4Woi4bzeJ8lgzIaVzRYhVI/0ONbMs=
+
+Name: assets/.godot/imported/hair-short.png-81c58a667033ad846b54eb9c53
+ 4ed3aa.ctex
+SHA-256-Digest: +OxTAl3YjG9dCwM4QjB0w2ysbRBs+TNw8u7MGjPYiw8=
+
+Name: assets/.godot/imported/hair-short.png-8f1d79fe69c3f063e8fe09635d
+ a37f7c.ctex
+SHA-256-Digest: 02pXpnNqNn0i1Glnkj3zgXB3HDMGdi4jQryahJk3pLg=
+
+Name: assets/.godot/imported/hand_point.png-22b44be27fc467bc90c3959fbf
+ 115ec0.ctex
+SHA-256-Digest: FyRkStObWOyErESS89amZzXs8zpqexPU5UYs9/hZFGs=
+
+Name: assets/.godot/imported/hand_point.png-cf30d6a3391fed95cee4098126
+ d9c17e.ctex
+SHA-256-Digest: 5mpPXnSSY5Zp1eycjad8qSoqVOhDhS2iLeaSwWG6e68=
+
+Name: assets/.godot/imported/shoes-rain_boots.png-126cc9d24245e8cd7dc0
+ 263be425fd58.ctex
+SHA-256-Digest: skB409zbFO2IX7B6pHJcBQKOk28MCG6i2I8WJjT76w0=
+
+Name: assets/.godot/imported/shoes-rain_boots.png-1b170999c4b4dd89ff89
+ a39495b633ba.ctex
+SHA-256-Digest: r9c+gjeIdzDbs5YymoUqiXQuQUKaH6wlQHwVqpLaBrY=
+
+Name: assets/.godot/imported/shoes-shoes.png-6bf6d22a56ec7ca50c7e7d5af
+ 5c98c84.ctex
+SHA-256-Digest: qFq/5bYeTsxZY/SygFwkoWBi83ptSLaf/J6o6WRk2kg=
+
+Name: assets/.godot/imported/shoes-shoes.png-b0ee4abb9d8dd0334a931d813
+ 9bc6520.ctex
+SHA-256-Digest: IJz/u/uhlsEgFtr8Kzxf5iOp/b3cgakSKx89eHY+CrY=
+
+Name: assets/.godot/imported/tex_eyes_1.png-dfe8ed26d1185a283aeb8ddb22
+ fef996.etc2.ctex
+SHA-256-Digest: ccOtjOorIg7Vif0ArlZ41CpO8T5SPwqn2/X1KvisdbU=
+
+Name: assets/.godot/imported/tex_eyes_2.png-5991b6652fb07cd7263b84afc2
+ e85170.ctex
+SHA-256-Digest: Z5iuq+De+1Cvz69kIcmUbLKLB70LJks+beMNESF8K/0=
+
+Name: assets/.godot/imported/top-dress.png-7f341f8920cba792fb35e286120
+ a658e.ctex
+SHA-256-Digest: VVUDwoig2h73naupwRAje8kk9dc87T3htPUxejynCoc=
+
+Name: assets/.godot/imported/top-dress.png-e8078cff333723dc4397c9179c9
+ 6e5bd.ctex
+SHA-256-Digest: +KaBkzlFSjRb/g8n0J33g10jrkqT6xMDKLb8F8TM3y0=
+
+Name: assets/.godot/imported/top-sweater.png-74946a62729621fed6dc79b96
+ 308946b.ctex
+SHA-256-Digest: sibqEWYxa2UUzC41uaLj9iUQEzkvfVMUhEx28ZQL6L0=
+
+Name: assets/.godot/imported/top-sweater.png-807ffd35ca7c763e3074345e3
+ 2f75aef.ctex
+SHA-256-Digest: 2lCoKpM9c5cxrgS1/1ZsFh05gibXlzx5j+mzeg0LCpU=
+
+Name: assets/.godot/imported/top-tshirt.png-2d10396ddfba2140b777a06ad7
+ ba299d.ctex
+SHA-256-Digest: cAhNY9L4iOIOnJ6uxHfT6mAz+PsnTOiGcxAJZvvtmWk=
+
+Name: assets/.godot/imported/top-tshirt.png-8ec8bfff10cd7607ef1c55a558
+ 8d48e8.ctex
+SHA-256-Digest: T0BL7HhW2m0WxzOYzpd8uHzpXEsRRsXdBZouuL5qyDk=
+
+Name: assets/.godot/imported/webview.svg-98b4564a2c84894affbef4b93ae62
+ 491.ctex
+SHA-256-Digest: lxbwe+n82YJxLc4aqjpSqlKVe6KhMj0CxlNOQoRNDSw=
+
+Name: assets/.godot/uid_cache.bin
+SHA-256-Digest: MY7jXqmUT3q03O3A/5t735DTrwAUMnCmtOTAIjHNFJs=
+
+Name: assets/_cl_
+SHA-256-Digest: lWbD/kau7cT+eUIwPKACfim0EqvQ9NXuqCXjyZxZHHM=
+
+Name: assets/addons/godot_wry/WRY.gdextension
+SHA-256-Digest: 8hWr9X2NKv6KcpdABQ6Vhx08+PKW3nTvikZ8wZfLkV0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/cas_gradient.jpg.import
+SHA-256-Digest: xXXZ9inYwiAHoRYZtnxNHZw+f0Hr/5bv8rmCZA07VyA=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character.glb.import
+SHA-256-Digest: 2d4XhTuPhv7Ct6ZPxl9hKgU4FaFtwxzkxTQo112UNFw=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_bubbles-tex-alpha.png.import
+SHA-256-Digest: y64FWWp+BrDPWG3zeOlO1MhTgkWP0BI4oygC1J6rDoI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_face-tex.png.import
+SHA-256-Digest: 4yEj6Gw9vurH1jiS7wk3c/CchpFpll/YrROeWQCTNMs=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_godotlogo-tex.png.import
+SHA-256-Digest: 2HZb4ohbNbuy6w63X2ziIm9uE683+D0E05rDVyd4LaM=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_horizontalines-tex.png.import
+SHA-256-Digest: b4zEcfb7GXdWGQnlwevVRUakRgVUTN/RfvbaHGD2h/U=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_jeans-tex.webp.import
+SHA-256-Digest: bqXNX3GM+zyh2rgjaV4vRLvJuNrHgmnhMJyVdVlI0g8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_necklace.png.import
+SHA-256-Digest: IfD0DgIGmFmOOq6N0poZotiGXi0ebtqHsRRKWWuOus4=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_shoelace-alpha2.png.import
+SHA-256-Digest: SUzAk2sUaER1Q1RThJL9KXO3771gru1wv47WPhueOyg=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_short-txt2.png.import
+SHA-256-Digest: fdqOYR75YYWz4VgNPiOri3A6P6ibD9G1oQhsmfo4GF8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_skirt-tex.png.import
+SHA-256-Digest: pMLJslvwBciLdbpU001KMuZacjLWVqAQ6/7Vp9JSUv4=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_triangles-pattern-inverted-tex.png.import
+SHA-256-Digest: hux4/2BrDkocSmASwV8F386UytsCyhNmZLFbC48cg+4=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/character_wool-tex.png.import
+SHA-256-Digest: vrTbyZs8Meg0ywOqyn6kRBGoREy+r6BpqTPAU+lsVN0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/Glasses.tres.remap
+SHA-256-Digest: npqpF7k5q/EZAuBhVKaGNLMQM+3f4lWnzFytDMRBJ7M=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/Hair.tres.remap
+SHA-256-Digest: wYrKeXaGlqGfhECwSBGczaKz1bYcx0V7P3biTroemVw=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MaCatEarsInner3.tres.remap
+SHA-256-Digest: yvKKWWEh7MJLg/dGKLiF67/deWOxqkpu0QGndiYay2I=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatBody.tres.remap
+SHA-256-Digest: HRpLYhmcVnL2pe8svtV8QfoHlCg+CZ2pgvY1jS/m7Xo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatBoots.tres.remap
+SHA-256-Digest: 77ioRkz+kxde4LGexeQz8TTjvH3HVPQaTVm0QcLtq1U=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatBoots2.tres.remap
+SHA-256-Digest: L+cWYiYEb5M9iaiU/pTFImSxfyG5juHS3WeL077+vXE=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatCatEars.tres.remap
+SHA-256-Digest: Gb5tpv8o7EYUz3JGB7FCqTKp/7jiCwsM5yQw2FtYfAw=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatCatEarsInner.tres.remap
+SHA-256-Digest: yhwywv+BOUqeTn3nkJewNrTLR9F6gZkyM5jxGnPvrUc=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatCatEarsInner2.tres.remap
+SHA-256-Digest: okHO7yQntA4zEH72tWs+xms0CJavFl8ygYKOUhx9lhg=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatDress.tres.remap
+SHA-256-Digest: Np74CILdmtlvslbsOQK+EZW7Dsu643+xX3fT3ffakMM=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatEye.tres.remap
+SHA-256-Digest: GrbfmPXCT1vqegEEJUL20g+Xg8SaW7XKO+2dPkEqEaM=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatEyeBlack.tres.remap
+SHA-256-Digest: OK2zmcJAoeFtzwV5OaUFOFryZT0H4dknp80Y4ZCEqGE=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatFace.tres.remap
+SHA-256-Digest: JhdARjV5uy3vfm0pMqUVonGvWLPxpVa9YcmGsZtAjoo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatHat.tres.remap
+SHA-256-Digest: oLrkj6/vB5YCFpNvs1tWLJfI+Uj0kMhYtb5RnRKFvwo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatHatCap.tres.remap
+SHA-256-Digest: ZT2Ahesh82Wh4XIMiJeSYwZtDOXExUtYwcs/T6sUeMc=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatHatLogo.tres.remap
+SHA-256-Digest: rgcSqkKDk2EnqDTMBiMbZ6vu3/HCPm16+LGBEEHO7MI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatJeans.tres.remap
+SHA-256-Digest: 3S0Cudi0WwnvhDg9UKQ+ZFO10Q4YPuf0HDSJcXydOnA=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatJeans2.tres.remap
+SHA-256-Digest: ktZ9513BJW2zPhoxoqxIr3xSU7F5UFoInO6C0eOt+cI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatNecklace.tres.remap
+SHA-256-Digest: ImD6AmpPK2hmsL0T6eARrJg2P2QuYU32o9PxTmijQiM=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatNose.tres.remap
+SHA-256-Digest: R7U+tuUOxYt0TU1hRXRa0gS/D8CCmaHKmLMau5MnkjE=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatShirt01-Color.tres.remap
+SHA-256-Digest: mi6q4ubYHYIdl4S8AVXogzdO+nPUoobxb3lhhtaq4Zc=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatShirt01.tres.remap
+SHA-256-Digest: X/L5M0P6MVcrbK9uyy7y8XLuq3QVBoyvWsNkuFSfDzM=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatShirt02.tres.remap
+SHA-256-Digest: cL93LPj9ATPqyUOZgg0mHajHIhAvqlm9Nzn9/aLmrns=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatShoelaces.tres.remap
+SHA-256-Digest: lim/6Bnt3Ne+ITJtp72sBtG8U9vtBhiPXKuXzaWh1DY=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatShoes.tres.remap
+SHA-256-Digest: fFfSm2gPjDlscJPoXeTxJIifjqkQZDrDnzNTivvEQlc=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatShorts.tres.remap
+SHA-256-Digest: DOLgD4hFhsdc3ZRnTkXFQ7wwKM0P2cwLlliGm3veZ5o=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatSkirt.tres.remap
+SHA-256-Digest: y7A7DIB9AkAyeHF+sUEd2jItT25ww+hzCZ+OdHf5HN4=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/materials/MatUnderShirt.tres.remap
+SHA-256-Digest: qsvl7/A8iQGmo76THEtPL+IUxDifMDQuOziu6IkbHWI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/tex_eyes_1.png.import
+SHA-256-Digest: nxDxFsSfik5g4gsExVnGwYkof0RtRwTXKqhlsV1RgGE=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/asset
+ s/character/tex_eyes_2.png.import
+SHA-256-Digest: qEKqPUfV9yx0WMDxFlCsVOKxOhh0pyXh4QSStNaU+IE=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/chara
+ cter_creator.gd
+SHA-256-Digest: kJRA+XXP5zsIr9jJiEXeF7WQva6GiOPh6igyFhNMSEU=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/chara
+ cter_creator.tscn.remap
+SHA-256-Digest: NpO1CqWmqd2K8UoUpR2DigdziYVbuVCJGfjABvLHQdQ=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/env.js
+SHA-256-Digest: FXwXDsA5tEPkJToTk9x+sTQxivh3GBj7Hbn1bdr5MYw=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/assets/0.ll7Fa8h-.css
+SHA-256-Digest: FOjLGv3tzKD0CTo/gPAoQXkkXufZzLedaRZN8x5Gyx0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/assets/_layout.BWO0-9px.css
+SHA-256-Digest: Cw5esTR8N54PdNo1Z/Hi16K2PGP3GjvYexYwKrfcdA0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/chunks/0_sM3_BJ.js
+SHA-256-Digest: jTco4+OXLEZPIaPa5BGP0iviOWX20OBwpakvpm9wxwE=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/chunks/AQm5v7yd.js
+SHA-256-Digest: /9LBgamuPyyeN3q3/YCuok+wx43I8qzScqfS50q4Ez8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/chunks/BfZVz48s.js
+SHA-256-Digest: VFpABKgpBiSajp9+ji6AQQYDDVQwTobsUJ76MicfxPI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/chunks/CFBPDag8.js
+SHA-256-Digest: QBMxsm4v6csVUnvIXtUf7l1X7DXV486PYCfeJdS3NX0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/chunks/CnT8J5KN.js
+SHA-256-Digest: wBLsswIIvic02QxM1gFbW/dDxYV87qu8k6ceaHbVgX0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/chunks/DXCH7R1G.js
+SHA-256-Digest: LJuQeWcLIUNIbnhlm17OINgPzj7rrSZputwCa5Xdrhk=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/chunks/Pu7kkeJq.js
+SHA-256-Digest: /W2Qvu/SZrx5HAzZ5ddtYwO+ayiDVj3VCBdVzk2yves=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/entry/app.mAT8psio.js
+SHA-256-Digest: 35pRRVZEZhdeQpjLNZVCCcOBfVrTDShhLEkPEqGps/Y=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/entry/start.Ch5GB2mx.js
+SHA-256-Digest: 0etFRPUR4RYZ6SQmXNEHoVzWb1ViCFiKp6KlCVE/T4c=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/nodes/0.BFRYhLL4.js
+SHA-256-Digest: 6g8Z3fwBnSBw1hjhLp3H8PDQgBgPRJ4LMgszBe5wYTs=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/nodes/1.BhHKx13L.js
+SHA-256-Digest: 46ZI7sXhG2SY66D0iQaRcKqzNIinfqo9GzLGoaky/bs=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/immutable/nodes/2.BVAEismz.js
+SHA-256-Digest: U933ug9vnjeFF/TZy22aMqpmZg9I0CmmKPQcKv/pATo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/_app/version.json
+SHA-256-Digest: WPBME9fv0/VSNJAWKh+cGED3H5sEVMIn//NYjMqi3sc=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/accessories-cap.png
+SHA-256-Digest: n2VJfFAGE5JWou0NQxxf1WsZ2iHTBycN/DLQZjZzk68=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/accessories-cap.png.import
+SHA-256-Digest: RScsL2TykcMWLJfKUxwLIoS2+Veh1mbWDyReX16X80g=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/accessories-cat_ears.png
+SHA-256-Digest: 8HyRGzRFtME9PVg0kx+Auzdg+sviuTdE2D8Q3fkZr7Y=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/accessories-cat_ears.png.import
+SHA-256-Digest: FpL0rfaBTmvtfcuwSNbo3q7i11PsnCM6Ahq8akYa+k0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/accessories-glasses.png
+SHA-256-Digest: qiigQ3tszQCBAuRxwSHYWPqRCUVFC9DqLDo8VdIye/s=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/accessories-glasses.png.import
+SHA-256-Digest: MMjQZunv3Br82JbdFeS20u+hogXrrnsjDbAweMhsPGg=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/bottom-pants.png
+SHA-256-Digest: i5tYr3NUHVSCjBL3DhOmzeamrl+UwoeXxlH5dToXRvQ=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/bottom-pants.png.import
+SHA-256-Digest: XXtNZUIYzfmeqjgEI09dq2yLS5ocSCWKpkyQaz1QiM4=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/bottom-shorts.png
+SHA-256-Digest: Y1wq2Y8OSLOPFHEuUpUaOgZA7COllA/Y+1SPREwbuN8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/bottom-shorts.png.import
+SHA-256-Digest: iZkqo3OOcQ3HPlnYIEjSf/HUUhav5oDw1vb7VGbk4pw=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/bottom-skirt.png
+SHA-256-Digest: cUJ3nIsEob4Wvx+xnCOQ3j2N/oWStzfIbPi7dbC3PbY=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/bottom-skirt.png.import
+SHA-256-Digest: ia4YcLWReznsMcTqzgE3ZGdQ1YK5Hb7aNIb8Dmm3GUo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/eyes-a.png
+SHA-256-Digest: J2iURpNT50bYyjgtlTLkLROheu+leNnIaIHyb1J0Pcs=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/eyes-a.png.import
+SHA-256-Digest: DLQDDmMhUmO4j1wi4nBIGiWs+WS8VTzvBH+CqYiuCK8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/eyes-b.png
+SHA-256-Digest: vSqjmpS671j3Zk5TU5DT790Jsfs8biyK20QZFC2RT8Y=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/eyes-b.png.import
+SHA-256-Digest: d+RZKSsmDxy6ufgzdPDnRSscX5//qbuRsl6a1FhWPrA=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/favicon.png
+SHA-256-Digest: jtEAGcNI6PJg0hf25HRDQ3nje/GiMenIH+V5PbV2ifk=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/favicon.png.import
+SHA-256-Digest: duAEMu+9YqUi21ehZFYnukPmUbt1mZdUSUVj1UxXyqA=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/hair-long.png
+SHA-256-Digest: IQV6qlJZZsQJ1/Dgj/GweDmJVOY72EMBtEzsc5tD3Vo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/hair-long.png.import
+SHA-256-Digest: 9YNVyVD0bhZM7LPCRWmB8Hw5J7bxMPht30XRZmoZd0U=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/hair-short.png
+SHA-256-Digest: JJZPIL5rhqeDKU/BJa9msC9+ikk7rpuhB2PDj+SBTK8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/hair-short.png.import
+SHA-256-Digest: Nm31mrx9HuqFo9hFF9PCglk8oQvQg+UhjYblrp0hO8k=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/hand_point.png
+SHA-256-Digest: FGmjIV7vXL3NUNiqMk4DopPm+YaH4Mfh9XzLlTECx7Y=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/hand_point.png.import
+SHA-256-Digest: ZvoQl22QJwpr3W8IoSdcSA9QcI+YpyNiED2w/4KprdM=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/index.html
+SHA-256-Digest: MAyQv/73ROZJcwT04A2neU/i1fBuqFKjynOoUbq/eUs=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/shoes-rain_boots.png
+SHA-256-Digest: Y6Ap5h6OFbG0e9uZ+YmSR8GzwoFVD6HWbcveFvy2Ezw=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/shoes-rain_boots.png.import
+SHA-256-Digest: N6+fsVtTd8YHyDg/E9Wxcni2Y0aJD/mQpf7sflrSPaA=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/shoes-shoes.png
+SHA-256-Digest: 4iS3ylEdk81CvUxlHAfFVsifXj/UQrY1HgfEYg8kyoo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/shoes-shoes.png.import
+SHA-256-Digest: y7luFpGrQoU8D7C6rKnsqVb8i61LmnMT+cwQOzZFtf4=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/top-dress.png
+SHA-256-Digest: C+KQ9q6ReAulVAcWJSus97CTQSH4Y6BPKIv4IyXD+6Y=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/top-dress.png.import
+SHA-256-Digest: Jj7/xUg/dYdzipyCzvbiX8NrtWyWUNAaxrxZ6skSUgI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/top-sweater.png
+SHA-256-Digest: +IUINI+V9QATqSV3u0Ev65UfcxCXVXcyTiQscr+EGAI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/top-sweater.png.import
+SHA-256-Digest: /c8SApllHQBSnVkRv3nA5SGz5DPHuav37JVcn7mRHgs=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/top-tshirt.png
+SHA-256-Digest: bplnEAhunUEs25ZApzCKTtV0z3m64/uY0Chb//aX9Pk=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/bu
+ ild/top-tshirt.png.import
+SHA-256-Digest: ucYOixVFir7Iv28SPaRO8ekS7iYUh/fkBac9//c4p8w=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/pa
+ ckage-lock.json
+SHA-256-Digest: ONRnAFuEjtxcdCfqJnHYtJfCnQ4tsIyW2ZB05sl2Sso=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/pa
+ ckage.json
+SHA-256-Digest: d7Ewlfc2w+jFF3Wk2EBjhnuH9hos5W6+fi570k3dwbU=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/accessories-cap.png.import
+SHA-256-Digest: b3F1X8EouoE+P7449X1mWXK1uWF0d52Xq7uJvrWF1U8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/accessories-cat_ears.png.import
+SHA-256-Digest: p1KabelmwVd9izv3Nv8PCxRoyHN1VdHlx0xANB6rMMo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/accessories-glasses.png.import
+SHA-256-Digest: lXiFycRoDUyOt/uDh0loHqXfRs2qxZN0mdacDRUrOj0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/bottom-pants.png.import
+SHA-256-Digest: ZUQYVHgkSpbLVuFycKIYjX/uqtCZQjjJhxlyupp9vCk=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/bottom-shorts.png.import
+SHA-256-Digest: fuGFJ9logQEpzW6tcoPMbRGR3sQHiWTX098//bxDzFA=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/bottom-skirt.png.import
+SHA-256-Digest: KQTW2w+1tKUqUcw76D0oKg6OiWMMPC/rLOkBikMgpLY=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/eyes-a.png.import
+SHA-256-Digest: dVtCEtgddiQ/cmZt5lGwa+XE8GbuQbmfwVKTmn2FnR8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/eyes-b.png.import
+SHA-256-Digest: SwX4ISbbwXUCtjLdw9EPYXmvRqmMbZlSKsfTsbVbv+g=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/favicon.png.import
+SHA-256-Digest: jWrQaWgsm5Or5C8r0SxVS1300NYI1E6GkP3uBMvEyUI=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/hair-long.png.import
+SHA-256-Digest: 6eZhdiOJSkSkIfHKS2fcX7D6E9ATk/KKknKkvfVLdDw=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/hair-short.png.import
+SHA-256-Digest: DqZrL6rYFyZcLI6A4GxR1fSr20SZtcd7lpLxF7928p8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/hand_point.png.import
+SHA-256-Digest: vxUv84Pk4vo+biqMRnYouvSy8oj3QCjlS/hJjgw0XTQ=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/shoes-rain_boots.png.import
+SHA-256-Digest: QcgiJB2NME8SaqUn4bcVAgFtRWi2Yns6U65nbcan9a0=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/shoes-shoes.png.import
+SHA-256-Digest: bhkcSpThYr+Lj+Oib+sYOnAzMesi0aiL7v/iW6fWV/8=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/top-dress.png.import
+SHA-256-Digest: Slr5kl7LBhzP9yHMo2CaTL+HNOdjJCZUFCjEblhFONM=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/top-sweater.png.import
+SHA-256-Digest: 3VsV2yuzlsF7vk91FIxLuyrYtjD1E15AWOmo9Suipqo=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/st
+ atic/top-tshirt.png.import
+SHA-256-Digest: TG8JPgdaXFZCBJf4R/kdRhfjltrKUQsfsfhHvyEqzEQ=
+
+Name: assets/addons/godot_wry/examples/character_creator_ui_demo/ui/ts
+ config.json
+SHA-256-Digest: D30c5g+8veTBj5cDNHjkeTUc6iyJqFC2TS7qzWasKeU=
+
+Name: assets/addons/godot_wry/examples/example.tscn.remap
+SHA-256-Digest: Dg77XkKrERu7Q1wWb1DD0bJnx+cJWS3un2gPBrGfoYc=
+
+Name: assets/addons/godot_wry/icons/webview.svg.import
+SHA-256-Digest: puOQhmNeE2/VoYN5OBZc7vchiWEYXOz8sC6QN//pnM8=
+
+Name: assets/project.binary
+SHA-256-Digest: dXrR9FOfTH2bJ6L/cTpyOW8wVUwzIl6lIa0VIMGG1og=
+
+Name: classes.dex
+SHA-256-Digest: yT+mYTTvgjtO1yqEwIorLUBZTIpqb2I48qWdISBQKvg=
+
+Name: classes2.dex
+SHA-256-Digest: Lsh/17JpRFNLtTPL974u1CfpaV2+aFKcYjXjf3Y4XrE=
+
+Name: classes3.dex
+SHA-256-Digest: ClWonNAgIQYdhw5gW2ZFSWeQ1TMlLNEMyPlEPyFX2AE=
+
+Name: classes4.dex
+SHA-256-Digest: pL/450aVyErh5Jcc/JtPVbqatuHghz/Fi4uC5uCZTCg=
+
+Name: kotlin/annotation/annotation.kotlin_builtins
+SHA-256-Digest: 37WDWfmYN6iX75eAXUXFlMf/SlVVztjbh/wKm8XgEWU=
+
+Name: kotlin/collections/collections.kotlin_builtins
+SHA-256-Digest: Q7jZRv9+2qLROmcpCDWJWzGOsq/s4QM2TNcA5RrXm70=
+
+Name: kotlin/coroutines/coroutines.kotlin_builtins
+SHA-256-Digest: QETf+Rc+3vjnIqvzEpc9ejAXaloigQfzV2j4bU5faEU=
+
+Name: kotlin/internal/internal.kotlin_builtins
+SHA-256-Digest: qWjFefItkz/FFM0931o0I9QAMQd6m7pJzUdFC+5vViU=
+
+Name: kotlin/kotlin.kotlin_builtins
+SHA-256-Digest: VkN63WmmMvTy5+7sWhLjfsu1S8gsbvGzd2OXMHK4TbY=
+
+Name: kotlin/ranges/ranges.kotlin_builtins
+SHA-256-Digest: 6esJbrjuBmuBEM7N5TrVnjx2L2UG1oEIWu89qSZC99U=
+
+Name: kotlin/reflect/reflect.kotlin_builtins
+SHA-256-Digest: qh6R0TdzM0XLQkA8j2eqWn/lGjwb09s60ayGgdVcP8w=
+
+Name: lib/arm64-v8a/libc++_shared.so
+SHA-256-Digest: +Av20HqepSnY0pW4aSpH77S7lcuwH56gwYlCOVg2sJM=
+
+Name: lib/arm64-v8a/libgodot_android.so
+SHA-256-Digest: kEp5JW5mpku6JirmduPpE+s0oW/m0Lv4NCXt956hJB8=
+
+Name: lib/arm64-v8a/libgodot_wry.so
+SHA-256-Digest: kzxI6q5TeMsVzWDxMvWMr+uRkpHjnsVBQ0KLIfd7gfE=
+
+Name: lib/armeabi-v7a/libc++_shared.so
+SHA-256-Digest: 0gSZ+FWdPGNqNIvgBq42SVhf8LD3pcX1hII8LcPUnTw=
+
+Name: lib/armeabi-v7a/libgodot_android.so
+SHA-256-Digest: zydEy997uWud5rrsNiRiAEpkOc8RwndZlo2UZjvidEU=
+
+Name: lib/x86/libc++_shared.so
+SHA-256-Digest: gjsr0+DGC/LD0VlD0AmqRwrJ62rSWUJE52l7EnbXN8E=
+
+Name: lib/x86/libgodot_android.so
+SHA-256-Digest: 0OlOx3yWWFlTPm0L5hKlsIuVFkR1uwEdlDV2YJz6saA=
+
+Name: lib/x86_64/libc++_shared.so
+SHA-256-Digest: PU8FGj0R0KerXvX9hNC5ALaHNffY1sWWIskw0RfT0QU=
+
+Name: lib/x86_64/libgodot_android.so
+SHA-256-Digest: 4ukCKMUK3/cHrLbbGdJ8yE0iXedC2Yc3wU5uwmWdOoI=
+
+Name: lib/x86_64/libgodot_wry.so
+SHA-256-Digest: DplrEYp1vHxhJWnnGWRDXEXY+HErDKMXuCQGyhc6lys=
+
+Name: res/anim-v21/fragment_fast_out_extra_slow_in.xml
+SHA-256-Digest: drCtQ+FyBC5dx66ByTEswLoEDTceWPVnhP0K3P2rxJ0=
+
+Name: res/animator/fragment_close_enter.xml
+SHA-256-Digest: xzVZkI+xIfvrys0byDZKKisxPaRGuRustBBmjsoFHcQ=
+
+Name: res/animator/fragment_close_exit.xml
+SHA-256-Digest: 3zFNtTNaBT34JQ3EJTDM64DqRS9YAZ4Ff/zow2ECsPk=
+
+Name: res/animator/fragment_fade_enter.xml
+SHA-256-Digest: 7P8enVvZzQY1lkQ6YqCl0pN84B1p0nVYXrGBInYXsQg=
+
+Name: res/animator/fragment_fade_exit.xml
+SHA-256-Digest: 2LPsSVbuVFK3SzizVcuOLcODlK54Z73m+6Am+h3wPPw=
+
+Name: res/animator/fragment_open_enter.xml
+SHA-256-Digest: WDdpHvwIlAwlGQdo0cnS3TlsnApR6Cl+W2OFbqxbwHY=
+
+Name: res/animator/fragment_open_exit.xml
+SHA-256-Digest: sZf6aBToQ/Ysj9BewgsQJQeXOQMpHJJNZYU+1YVCe3Q=
+
+Name: res/drawable-hdpi-v4/notification_bg_low_normal.9.png
+SHA-256-Digest: fdgyJ61bkVHESSHzWiTHQ5LVNwIge6pbEao7ySrGIjw=
+
+Name: res/drawable-hdpi-v4/notification_bg_low_pressed.9.png
+SHA-256-Digest: 4RlHlyDIzTYG5Klg5AKe0Fi4c3z+iVWMOHgAh9ZL7Aw=
+
+Name: res/drawable-hdpi-v4/notification_bg_normal.9.png
+SHA-256-Digest: R2ot7jptNS4NITpYzXOWw8lhLeXmUvp8G9vuPhk6Z5g=
+
+Name: res/drawable-hdpi-v4/notification_bg_normal_pressed.9.png
+SHA-256-Digest: QpO86S6qjy93OQJSq/J9fVVQWcP9s8Pv2bUoICK94gI=
+
+Name: res/drawable-hdpi-v4/notify_panel_notification_icon_bg.png
+SHA-256-Digest: /PItNSPhz1UN7VfEyZ8kRa5sj9QY+F0lydOxu0h8L3A=
+
+Name: res/drawable-mdpi-v4/notification_bg_low_normal.9.png
+SHA-256-Digest: vPDmKMKiqjYmhi26bO46qs1KOttdTfXBQv3S6xgfvbk=
+
+Name: res/drawable-mdpi-v4/notification_bg_low_pressed.9.png
+SHA-256-Digest: e16Z3lBylbmIotIXO0QYkgWhWX879GWDILhD+IqQPrc=
+
+Name: res/drawable-mdpi-v4/notification_bg_normal.9.png
+SHA-256-Digest: vg/gP72vh/b3yaE+84dQHojgy5jwUZQN3hC/VrbOPYU=
+
+Name: res/drawable-mdpi-v4/notification_bg_normal_pressed.9.png
+SHA-256-Digest: E+nflwefiwR9S8AxSqqdC4YdlP6FC3dp3U7y/507B1k=
+
+Name: res/drawable-mdpi-v4/notify_panel_notification_icon_bg.png
+SHA-256-Digest: 8C4ln6xzH/7a1Zr/v13Gw9vF9lJ85KeVqKuMY61s+To=
+
+Name: res/drawable-nodpi-v4/splash.png
+SHA-256-Digest: LXQ2VqeWIPMG8LH9Ih+BfRyO5V24RVAD8bVpg5oSg8U=
+
+Name: res/drawable-nodpi-v4/splash_bg_color.png
+SHA-256-Digest: utQzVVhnRuuuWCRXuT+cBvMNP3sk/nJfu2OXUYP3RVE=
+
+Name: res/drawable-v21/notification_action_background.xml
+SHA-256-Digest: QKzfvy3042C1/ivSbK5/1LqLJGT+HlCIIPo1YmFDuuc=
+
+Name: res/drawable-xhdpi-v4/notification_bg_low_normal.9.png
+SHA-256-Digest: uXY6G0jRm/22W3PCh/Bn1QB8m4GwiK1QCuoTeveblDQ=
+
+Name: res/drawable-xhdpi-v4/notification_bg_low_pressed.9.png
+SHA-256-Digest: f/QdP0Grwhn/DYrOcK8L48iPdr49tI6JUbIsde2OQaY=
+
+Name: res/drawable-xhdpi-v4/notification_bg_normal.9.png
+SHA-256-Digest: UcrXW2ElY1qt5dfTsuSlaRj5YzoOKQ6qQH5GeDt/B8E=
+
+Name: res/drawable-xhdpi-v4/notification_bg_normal_pressed.9.png
+SHA-256-Digest: ukgIe6XxA8BIeBpiCpKscdVufr7N3/HFli1R1e0BBDs=
+
+Name: res/drawable-xhdpi-v4/notify_panel_notification_icon_bg.png
+SHA-256-Digest: D1Xpcp0eT5Aq/BN3oXeFvyGZiAwa+YOLYva+w2YhSQs=
+
+Name: res/drawable/notification_bg.xml
+SHA-256-Digest: wKZtXyxfgjbvKkT/hMzXOb+g+9w3Y5ybesthshB6MIg=
+
+Name: res/drawable/notification_bg_low.xml
+SHA-256-Digest: s/pcMrZhiSXHR5miOlwGOxZt/tTdcyBEt7/qDDIh3MI=
+
+Name: res/drawable/notification_icon_background.xml
+SHA-256-Digest: /EHu6R1L1pkBzt4c865i2JNnO8POaQgZ/YGIsTtlkS0=
+
+Name: res/drawable/notification_tile_bg.xml
+SHA-256-Digest: 5hL7GDJ4CgwyqnTZxs3MZmg/KP+oIecg34LWXUT2LXc=
+
+Name: res/drawable/splash_drawable.xml
+SHA-256-Digest: qlK78TDU5w2IlJfoU19/YsAr00cyWunYiGsF1M0Xf24=
+
+Name: res/layout-v21/notification_action.xml
+SHA-256-Digest: J8+sGZMoRFFuerK1fU1Lr65FbTC5NKksVESdhOwsr/4=
+
+Name: res/layout-v21/notification_action_tombstone.xml
+SHA-256-Digest: JcW80SucM+ViQeGIWTO6zsNzW6Z4T75Q098g55JGs7Y=
+
+Name: res/layout-v21/notification_template_custom_big.xml
+SHA-256-Digest: wS9TfXwEbbahAGS57XZW5jNL2eAuh8rJHOYCsKucQyk=
+
+Name: res/layout-v21/notification_template_icon_group.xml
+SHA-256-Digest: NGcyykfQTtvkMoDKNdbgbNuJ32fOa746t6aEF4jjiTY=
+
+Name: res/layout/custom_dialog.xml
+SHA-256-Digest: GjJEJ2GC+Lz70wtcJ0RVkGzKH523ldWLZqCKQtEdY1Q=
+
+Name: res/layout/downloading_expansion.xml
+SHA-256-Digest: JpiFvzHaUmc3qrASL2ASf476+4OfxPaYqYzSc6xM6dU=
+
+Name: res/layout/godot_app_layout.xml
+SHA-256-Digest: 7BuO+VZJR5VSmNlX5GDxHTgD9tEVTrE6Wt56KnZutaI=
+
+Name: res/layout/notification_template_part_chronometer.xml
+SHA-256-Digest: LfYlU2AWfT3pbtJ8qo73hz6MgFCacpRaX9FG/l4ARIo=
+
+Name: res/layout/notification_template_part_time.xml
+SHA-256-Digest: HDO9+KlzymiJ40QZAxtDGvJLwmdHm9IfST+R9FuQCEQ=
+
+Name: res/layout/status_bar_ongoing_event_progress_bar.xml
+SHA-256-Digest: jYkRWLgdH3rER/N9IsvqqkDYCWy4NUIQ0l4Xo7ysPSY=
+
+Name: res/mipmap-anydpi-v26/icon.xml
+SHA-256-Digest: jM2/raQ/nQmfFR2fMv7Dm3VNwLMpquwJUvfiVO60cSA=
+
+Name: res/mipmap-hdpi-v4/icon.png
+SHA-256-Digest: GSFkkcLV8A22DfST773jjRK39c/mMcqpLoD4lwfdo6o=
+
+Name: res/mipmap-hdpi-v4/icon_background.png
+SHA-256-Digest: Pd8G44WdpoV95e5mkysOA+sJwOIjphpb7qflNeeylF4=
+
+Name: res/mipmap-hdpi-v4/icon_foreground.png
+SHA-256-Digest: RQ63Ma7qEo9gU9RMG++hlJB9zcggZeDPmk7yn/l/nMs=
+
+Name: res/mipmap-mdpi-v4/icon.png
+SHA-256-Digest: I12F/ztyOTZmkMRzAJihn5I3ylAveuygnh8wbHF6XbE=
+
+Name: res/mipmap-mdpi-v4/icon_background.png
+SHA-256-Digest: XnQ+PUOwxSi7ZLWDlpnj3m+QNMjxCfThwvzpqyvfQ9E=
+
+Name: res/mipmap-mdpi-v4/icon_foreground.png
+SHA-256-Digest: AbOsYhqWSfmN79lYNVxxw8sy8CpRA22fKTKVq6GqPAA=
+
+Name: res/mipmap-xhdpi-v4/icon.png
+SHA-256-Digest: gi7076azJTSYVDbZSK78wT0AuEH5Bs0COdHl3+0MjrA=
+
+Name: res/mipmap-xhdpi-v4/icon_background.png
+SHA-256-Digest: PoD+Jabgm0BgkYZTdDLXrlW2gtu2W74CjChDIG+bEWY=
+
+Name: res/mipmap-xhdpi-v4/icon_foreground.png
+SHA-256-Digest: Hk34z0uBmsTg/ucE5lnPR4i754NaLP62wPQ2NtnfBW0=
+
+Name: res/mipmap-xxhdpi-v4/icon.png
+SHA-256-Digest: 14vWWZZNq5LgmzYQqAMSyhCcdw4iFhKMtpFyvFwf9XY=
+
+Name: res/mipmap-xxhdpi-v4/icon_background.png
+SHA-256-Digest: XX7q0c9iJpHjONJ0UkpnpaRpaH1kRfaLYT+wQCb1+oo=
+
+Name: res/mipmap-xxhdpi-v4/icon_foreground.png
+SHA-256-Digest: dU8L/vManWsZr3z69sf2IHFrspDbM6rcMILj38kegnw=
+
+Name: res/mipmap-xxxhdpi-v4/icon.png
+SHA-256-Digest: r9B7EcEOfMKOFB/GRx0MVeHTQyPV6wZiaSLdP/j17Tc=
+
+Name: res/mipmap-xxxhdpi-v4/icon_background.png
+SHA-256-Digest: W6pQZdFA+HaulcFAziP6AGIm6R0achDBioCIA8O8y7c=
+
+Name: res/mipmap-xxxhdpi-v4/icon_foreground.png
+SHA-256-Digest: 2sNUWvA3g5pLUuVJ883QJ+MZHaU3vthV6wxz3dVtbNE=
+
+Name: res/mipmap/icon.png
+SHA-256-Digest: jdC/XGIXBYIz+w7HROKi1+m1IMmCuKYdP8ZvWfla220=
+
+Name: res/mipmap/icon_background.png
+SHA-256-Digest: jkDAuKancpknF48Yhl/WSfCNIL/EmUoChd+jGjONt9E=
+
+Name: res/mipmap/icon_foreground.png
+SHA-256-Digest: KWBqlrAuBBFueoHNO6qxh7teFoa6GnPloZexUgzLHCQ=
+
+Name: res/xml/godot_provider_paths.xml
+SHA-256-Digest: 9dXvi7i9IkJDbJWUBF1VxirlbCC4MyjZKpgw+XXWj2I=
+
+Name: resources.arsc
+SHA-256-Digest: /fHl3crRTLhfWU9yZttLmrACjws6RIcCrTGe5T/g2k0=
+

@@ -33,7 +33,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class RustWebChromeClient(appActivity: WryActivity) : WebChromeClient() {
+@androidx.annotation.Keep class RustWebChromeClient(appActivity: WryActivity) : WebChromeClient() {
   private interface PermissionListener {
     fun onPermissionSelect(isGranted: Boolean?)
   }

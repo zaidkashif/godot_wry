@@ -12,7 +12,7 @@ package com.example.godotwry
 import android.text.TextUtils
 import android.util.Log
 
-class Logger {
+@androidx.annotation.Keep class Logger {
   companion object {
     private const val LOG_TAG_CORE = "Tauri"
 

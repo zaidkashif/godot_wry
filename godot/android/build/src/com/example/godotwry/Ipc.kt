@@ -10,7 +10,7 @@ package com.example.godotwry
 
 import android.webkit.*
 
-class Ipc(val webViewClient: RustWebViewClient) {
+@androidx.annotation.Keep class Ipc(val webViewClient: RustWebViewClient) {
     @JavascriptInterface
     fun postMessage(message: String?) {
         message?.let {m ->

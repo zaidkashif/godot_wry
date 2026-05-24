@@ -16,7 +16,7 @@ import androidx.webkit.WebViewFeature
 import kotlin.collections.Map
 
 @SuppressLint("RestrictedApi")
-class RustWebView(context: Context, val initScripts: Array<String>, val id: String): WebView(context) {
+@androidx.annotation.Keep class RustWebView(context: Context, val initScripts: Array<String>, val id: String): WebView(context) {
     val isDocumentStartScriptEnabled: Boolean
 
     init {

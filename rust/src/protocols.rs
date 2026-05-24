@@ -9,16 +9,150 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 pub fn get_res_response(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]>> {
-    let root = PathBuf::from("res://");
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        #[cfg(target_os = "android")]
+        {
+            return get_res_response_android(request);
+        }
+
+        #[cfg(not(target_os = "android"))]
+        {
+            return get_res_response_desktop(request);
+        }
+    }));
+
+    match result {
+        Ok(response) => response,
+        Err(_) => {
+            godot::prelude::godot_print!("[WRY Protocol] Panic while handling request, returning 500");
+            http::Response::builder()
+                .header(CONTENT_TYPE, "text/plain")
+                .status(500)
+                .body(Cow::from(b"Protocol handler panic".to_vec()))
+                .expect("Failed to build 500 response")
+        }
+    }
+}
+
+#[cfg(target_os = "android")]
+fn get_res_response_android(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]>> {
     let uri = request.uri().clone();
-    let path = format!(
-        "{}{}",
-        uri.host().unwrap_or_default(),
-        uri.path()
-    );
+    let path = format!("{}{}", uri.host().unwrap_or_default(), uri.path());
+
+    let raw_ptr = crate::android::get_asset_manager_ptr();
+    godot::prelude::godot_print!("[WRY Protocol Android] AssetManager ptr: {:p}", raw_ptr);
+    if let Some(non_null) = core::ptr::NonNull::new(raw_ptr) {
+        let asset_manager = unsafe { ndk::asset::AssetManager::from_ptr(non_null) };
+        let clean_path = path.trim_start_matches('/');
+        godot::prelude::godot_print!("[WRY Protocol Android] Request path: '{}', clean_path: '{}'", path, clean_path);
+        let path_c_str = match std::ffi::CString::new(clean_path) {
+            Ok(cstr) => cstr,
+            Err(_) => {
+                godot::prelude::godot_print!(
+                    "[WRY Protocol Android] Invalid path (NUL byte) '{}', returning 400",
+                    clean_path
+                );
+                return http::Response::builder()
+                    .header(CONTENT_TYPE, "text/plain")
+                    .status(400)
+                    .body(Cow::from(b"Invalid asset path".to_vec()))
+                    .expect("Failed to build 400 response");
+            }
+        };
+        let mut final_path_c_str = path_c_str.clone();
+        let mut asset = asset_manager.open(&final_path_c_str);
+
+        if asset.is_none() {
+            let fallback_path = if clean_path.is_empty() {
+                String::from("index.html")
+            } else if clean_path.ends_with('/') {
+                format!("{}index.html", clean_path)
+            } else {
+                format!("{}/index.html", clean_path)
+            };
+
+            godot::prelude::godot_print!(
+                "[WRY Protocol Android] Direct asset not found for '{}', trying fallback: '{}'",
+                clean_path,
+                fallback_path
+            );
+            if let Ok(fallback_c_str) = std::ffi::CString::new(fallback_path) {
+                if let Some(fallback_asset) = asset_manager.open(&fallback_c_str) {
+                    godot::prelude::godot_print!(
+                        "[WRY Protocol Android] Fallback asset found: '{}'",
+                        fallback_c_str.to_str().unwrap_or_default()
+                    );
+                    asset = Some(fallback_asset);
+                    final_path_c_str = fallback_c_str;
+                } else {
+                    godot::prelude::godot_print!(
+                        "[WRY Protocol Android] Fallback asset not found either: '{}'",
+                        fallback_c_str.to_str().unwrap_or_default()
+                    );
+                }
+            }
+        } else {
+            godot::prelude::godot_print!("[WRY Protocol Android] Direct asset found: '{}'", clean_path);
+        }
+
+        if let Some(mut a) = asset {
+            if let Ok(buffer) = a.buffer() {
+                let content = buffer.to_vec();
+                let extension = std::path::Path::new(final_path_c_str.to_str().unwrap_or_default())
+                    .extension()
+                    .unwrap_or_default()
+                    .to_str()
+                    .unwrap_or_default();
+
+                let content_type = MIME_TYPES
+                    .get(extension)
+                    .unwrap_or(&"application/octet-stream");
+
+                godot::prelude::godot_print!(
+                    "[WRY Protocol Android] Serving asset: '{}', size: {} bytes, mime: {}",
+                    final_path_c_str.to_str().unwrap_or_default(),
+                    content.len(),
+                    content_type
+                );
+
+                return http::Response::builder()
+                    .header(CONTENT_TYPE, *content_type)
+                    .status(200)
+                    .body(Cow::from(content))
+                    .expect("Failed to build 200 response");
+            } else {
+                godot::prelude::godot_print!(
+                    "[WRY Protocol Android] Failed to read asset buffer: '{}'",
+                    final_path_c_str.to_str().unwrap_or_default()
+                );
+            }
+        }
+    } else {
+        godot::prelude::godot_print!("[WRY Protocol Android] Error: AAssetManager pointer is NULL!");
+    }
+
+    godot::prelude::godot_print!("[WRY Protocol Android] 404 Not Found for path: '{}'", path);
+    http::Response::builder()
+        .header(CONTENT_TYPE, "text/plain")
+        .status(404)
+        .body(Cow::from(format!("Could not find asset at {}", path).as_bytes().to_vec()))
+        .expect("Failed to build 404 response")
+}
+
+#[cfg(not(target_os = "android"))]
+fn get_res_response_desktop(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]>> {
+    let uri = request.uri().clone();
+    let path = format!("{}{}", uri.host().unwrap_or_default(), uri.path());
+    let root = PathBuf::from("res://");
     let mut full_path = root.join(&path);
 
-    debug_print!("[WRY Protocol] Request: {} | scheme={} host={} path={}", uri, uri.scheme_str().unwrap_or("?"), uri.host().unwrap_or("?"), uri.path());
+    debug_print!(
+        "[WRY Protocol] Request: {} | scheme={} host={} path={}",
+        uri,
+        uri.scheme_str().unwrap_or("?"),
+        uri.host().unwrap_or("?"),
+        uri.path()
+    );
     debug_print!("[WRY Protocol] Resolved full_path: {:?}", full_path);
 
     let mut full_path_str = GString::from(full_path.to_str().unwrap_or_default());
@@ -65,16 +199,16 @@ pub fn get_res_response(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]
     }
 
     let extension = full_path
-            .extension()
-            .unwrap_or_default()
-            .to_str()
-            .unwrap_or_default();
+        .extension()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default();
 
     let content_type = MIME_TYPES
-            .get(extension)
-            .unwrap_or(&"application/octet-stream");
+        .get(extension)
+        .unwrap_or(&"application/octet-stream");
 
-    return FileAccess::open(&full_path_str, ModeFlags::READ)
+    FileAccess::open(&full_path_str, ModeFlags::READ)
         .map(|mut file| {
             let file_size: u64 = file.get_length().try_into().expect("failed to get file size");
 
@@ -92,7 +226,7 @@ pub fn get_res_response(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]
                 content_range = Some((start, end));
             }
 
-            return if let Some((start, end)) = content_range {
+            if let Some((start, end)) = content_range {
                 if start >= file_size {
                     return http::Response::builder()
                         .header(CONTENT_TYPE, *content_type)
@@ -129,7 +263,8 @@ pub fn get_res_response(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]
                     .body(Cow::from(content))
                     .expect("Failed to build 200 response")
             }
-        }).unwrap_or_else(|| {
+        })
+        .unwrap_or_else(|| {
             http::Response::builder()
                 .header(CONTENT_TYPE, "text/plain")
                 .status(500)
@@ -139,7 +274,7 @@ pub fn get_res_response(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]
                         .to_vec(),
                 ))
                 .expect("Failed to build 404 response")
-        });
+        })
 }
 
 lazy_static! {

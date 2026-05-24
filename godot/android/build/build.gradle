@@ -80,7 +80,7 @@ android {
     defaultConfig {
         // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
         aaptOptions {
-            ignoreAssetsPattern "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+            ignoreAssetsPattern "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
         }
 
         ndk {
@@ -119,12 +119,10 @@ android {
 
     signingConfigs {
         debug {
-            if (hasCustomDebugKeystore()) {
-                storeFile new File(getDebugKeystoreFile())
-                storePassword getDebugKeystorePassword()
-                keyAlias getDebugKeyAlias()
-                keyPassword getDebugKeystorePassword()
-            }
+            storeFile project.file("../../../debug.keystore")
+            storePassword "android"
+            keyAlias "android"
+            keyPassword "android"
         }
 
         release {
@@ -144,11 +142,7 @@ android {
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
-            if (shouldSign()) {
-                signingConfig signingConfigs.debug
-            } else {
-                signingConfig null
-            }
+            signingConfig signingConfigs.debug
         }
 
         dev {
@@ -156,11 +150,7 @@ android {
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
-            if (shouldSign()) {
-                signingConfig signingConfigs.debug
-            } else {
-                signingConfig null
-            }
+            signingConfig signingConfigs.debug
         }
 
         release {
@@ -183,9 +173,18 @@ android {
             aidl.srcDirs = ['aidl']
             assets.srcDirs = ['assets']
         }
-        debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs = ['libs/dev']
-        release.jniLibs.srcDirs = ['libs/release']
+        debug {
+            manifest.srcFile 'src/debug/AndroidManifest.xml'
+            jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
+        }
+        dev {
+            manifest.srcFile 'src/dev/AndroidManifest.xml'
+            jniLibs.srcDirs = ['libs/dev']
+        }
+        release {
+            manifest.srcFile 'src/release/AndroidManifest.xml'
+            jniLibs.srcDirs = ['libs/release']
+        }
     }
 
     applicationVariants.all { variant ->
@@ -271,3 +270,9 @@ project.afterEvaluate {
         }
     }
 }
+
+task copySvelteAssets(type: Copy) {
+    from "../../addons/godot_wry/examples/character_creator_ui_demo/ui/build"
+    into "assets/addons/godot_wry/examples/character_creator_ui_demo/ui/build"
+}
+preBuild.dependsOn(copySvelteAssets)

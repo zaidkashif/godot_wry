@@ -46,15 +46,5 @@ public class GodotApp extends WryActivity {
 		super.onCreate(savedInstanceState);
 	}
 
-	@Override
-	public void onWebViewCreate(android.webkit.WebView webView) {
-		runOnUiThread(() -> {
-			android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
-				android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-				android.view.ViewGroup.LayoutParams.MATCH_PARENT
-			);
-			addContentView(webView, params);
-			webView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-		});
-	}
+
 }

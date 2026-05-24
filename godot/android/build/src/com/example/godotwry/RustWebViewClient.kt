@@ -14,7 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.webkit.WebViewAssetLoader
 
-class RustWebViewClient(context: Context): WebViewClient() {
+@androidx.annotation.Keep class RustWebViewClient(context: Context): WebViewClient() {
     private val interceptedState = mutableMapOf<String, Boolean>()
     var currentUrl: String = "about:blank"
     private var lastInterceptedUrl: Uri? = null

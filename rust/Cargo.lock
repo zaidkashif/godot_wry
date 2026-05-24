@@ -711,6 +711,7 @@ dependencies = [
  "lazy_static",
  "ndk",
  "ndk-context",
+ "ndk-sys",
  "raw-window-handle",
  "serde_json",
  "windows 0.61.3",

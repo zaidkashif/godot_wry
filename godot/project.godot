@@ -18,8 +18,11 @@ config/features=PackedStringArray("4.2", "Forward Plus")
 
 window/size/viewport_width=2560
 window/size/viewport_height=1440
+window/size/transparent=true
+window/per_pixel_transparency/allowed=true
 
 [rendering]
-
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.00784314, 0.0235294, 0.0901961, 1)

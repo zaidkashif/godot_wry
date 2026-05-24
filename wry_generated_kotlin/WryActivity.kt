@@ -12,21 +12,12 @@ import android.os.Build
 import android.os.Bundle
 import android.webkit.WebView
 import android.view.KeyEvent
-import org.godotengine.godot.GodotActivity
+import androidx.appcompat.app.AppCompatActivity
 
-abstract class WryActivity : GodotActivity() {
+abstract class WryActivity : AppCompatActivity() {
     private lateinit var mWebView: RustWebView
 
-    open fun onWebViewCreate(webView: WebView) {
-        runOnUiThread {
-            val params = android.widget.FrameLayout.LayoutParams(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            addContentView(webView, params)
-            webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        }
-    }
+    open fun onWebViewCreate(webView: WebView) { }
 
     fun setWebView(webView: RustWebView) {
         mWebView = webView
