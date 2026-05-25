@@ -8,21 +8,24 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="WRY"
 run/main_scene="res://addons/godot_wry/examples/character_creator_ui_demo/character_creator.tscn"
-config/features=PackedStringArray("4.2", "Forward Plus")
+config/features=PackedStringArray("4.6", "Mobile")
+config/icon="res://icon.png"
 
 [display]
 
 window/size/viewport_width=2560
 window/size/viewport_height=1440
-window/size/transparent=true
-window/per_pixel_transparency/allowed=true
 
 [rendering]
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
+
+renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.00784314, 0.0235294, 0.0901961, 1)

@@ -184,22 +184,59 @@ plutil -p   godot/addons/godot_wry/bin/ios/libgodot_wry.xcframework/Info.plist
 
 ---
 
-## Verification & open points (need a real build/device run)
+## ✅ VERIFIED: full demo running on a physical iPhone (Godot 4.6.3)
 
-These were implemented from the godot-rust iOS export docs + WRY's iOS API and
-mirror the Android pipeline, but have **not** been executed end-to-end here:
-
-1. **`objc2` version + `msg_send!` BOOL/return forms** in `ios.rs` — compile-check
-   with `cargo build --target aarch64-apple-ios-sim` and adjust if the objc2
-   minor API differs.
-2. **xcframework consumption by the Godot iOS exporter** — confirm Godot accepts
-   the `ios.* = ".xcframework"` entry. If a single framework is required instead,
-   point the entries at `bin/ios/libgodot_wry.ios.framework` (the script emits it).
-3. **`WINDOW_VIEW` timing** — confirm `godotView` exists when the `WebView` node's
-   `ready()` runs; if not, defer one frame like the Android path.
-4. **Custom-protocol URL form on iOS WKWebView** — verify the initial `res://`
-   page loads; iOS currently follows the macOS (`http://res.`) convention.
+The character-creator demo (3D character + transparent WebView overlay) was run
+end-to-end on a real iPhone 15. Confirmed in the device log:
 ```
-
-**Last updated:** 2026-05-25
+Initialize godot-rust (API v4.2.stable.official, runtime v4.6.3.stable.official)
+Metal 4.0 - Forward Mobile - Apple A16 GPU
+[Godot WRY] iOS WebView built successfully!
+[Godot WRY] iOS WebView grafted to front and made transparent.
 ```
+The 3D scene renders with the Svelte web UI composited on top (transparent
+WKWebView), exactly as on desktop/Android.
+
+### Four gotchas that had to be fixed to get there (all done in this repo)
+
+1. **GDExtension needs an arch tag.** The iOS exporter looks for an `arm64`
+   library — `ios.debug`/`ios.release` alone fail with *"No 'arm64' library
+   found"*. Use `ios.arm64` / `ios.debug.arm64` / `ios.release.arm64` (see
+   `WRY.gdextension`).
+2. **A main scene must be set.** `project.godot` had no `run/main_scene`, so the
+   exported app loaded the engine + extension then exited cleanly (exit 0, blank).
+   Set `run/main_scene` to the demo scene.
+3. **Web assets must be in the export filter.** `.html/.js/.css` are *non-resource*
+   files; with the default `all_resources` filter they are NOT packed into the
+   `.pck`, so `res://…/index.html` 404s on device (works on desktop only because
+   files are on disk). Add them via `include_filter` in the export preset
+   (`*.html, *.js, *.css, *.json, *.wasm, …` — see `export_presets.cfg`).
+4. **App-Store icon must be opaque** and the framework **bundle id must not
+   contain underscores** (`build_ios.sh` uses `doceazedo.godotwry.libgodotwry`).
+
+### iOS Simulator caveat (important)
+
+Godot 4.6.3's official iOS **Simulator** engine lib is **x86_64-only**
+(`lipo` the template's `libgodot.a` to confirm). On Apple-Silicon Macs the
+simulator is arm64, so:
+- an arm64-sim app **won't link** (no arm64 engine objects), and
+- an x86_64-sim app **won't install** on the arm64 simulator.
+
+→ **Use a real device** (clean: arm64 device template + arm64 WRY slice both
+exist), or wait for arm64-sim templates. `build_ios.sh` still emits a universal
+(arm64+x86_64) sim slice so the extension side is ready when Godot ships one.
+
+### Running on a physical device (the verified path)
+
+1. `scripts/build_ios.sh` (full — builds device + sim slices into the xcframework).
+2. In `project.godot`: ensure `run/main_scene` is set and the renderer is
+   **Mobile** (Metal needs iOS 14+, which the preset's `min_ios_version` matches).
+3. Export the Xcode project (the headless export validation is buggy — use the
+   **GUI** export, or it will report empty config errors).
+4. Open the `.xcodeproj` in **Xcode**, select the device, set **Signing &
+   Capabilities → your Team** (Automatic), press **Run**. CLI signing fails
+   without an interactive Apple-ID login + 2FA, so use the GUI for the first run.
+5. On the device, **Trust** the developer cert (Settings → General → VPN & Device
+   Management) if prompted. WebKit helper processes take a few seconds to spin up.
+
+**Last updated:** 2026-05-25 — verified on physical iPhone 15 / Godot 4.6.3.
