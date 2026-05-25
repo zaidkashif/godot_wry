@@ -1,6 +1,8 @@
-// Platform-specific window handle imports — none of these exist on Android.
-// The entire HasWindowHandle impl is gated below with cfg(not(target_os = "android")).
-#[cfg(not(target_os = "android"))]
+// Platform-specific window handle imports — none of these exist on Android or
+// iOS. The entire HasWindowHandle impl is gated below with
+// cfg(not(any(target_os = "android", target_os = "ios"))), since iOS builds its
+// own UiKitWindowHandle inline in lib.rs rather than going through GodotWindow.
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use raw_window_handle::{HandleError, HasWindowHandle, RawWindowHandle, WindowHandle};
 
 #[cfg(all(not(target_os = "android"), target_os = "windows"))]
@@ -35,16 +37,16 @@ use {
 /// A thin wrapper around a Godot `window_id` that implements the
 /// `raw-window-handle` traits so that WRY can accept it as a parent window.
 ///
-/// On Android this struct is still defined but `HasWindowHandle` is not
-/// implemented — the Android WebView path uses `ndk_context` instead of
-/// OS window handles. The struct itself is only ever constructed under a
-/// `#[cfg(not(target_os = "android"))]` guard in `lib.rs`.
-#[cfg_attr(target_os = "android", allow(dead_code))]
+/// On Android and iOS this struct is still defined but `HasWindowHandle` is not
+/// implemented — Android uses `ndk_context` and iOS builds a `UiKitWindowHandle`
+/// inline. The struct is only ever constructed under a
+/// `#[cfg(not(any(target_os = "android", target_os = "ios")))]` guard in `lib.rs`.
+#[cfg_attr(any(target_os = "android", target_os = "ios"), allow(dead_code))]
 pub struct GodotWindow {
     pub window_id: i32,
 }
 
-#[cfg_attr(target_os = "android", allow(dead_code))]
+#[cfg_attr(any(target_os = "android", target_os = "ios"), allow(dead_code))]
 impl GodotWindow {
     pub fn new(window_id: i32) -> Self {
         Self { window_id }
@@ -52,8 +54,8 @@ impl GodotWindow {
 }
 
 // HasWindowHandle is only meaningful on desktop platforms.
-// Android uses wry::android_setup + ndk_context instead of window handles.
-#[cfg(not(target_os = "android"))]
+// Android uses wry::android_setup + ndk_context; iOS uses UiKitWindowHandle.
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 impl HasWindowHandle for GodotWindow {
     #[cfg(target_os = "windows")]
     fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {

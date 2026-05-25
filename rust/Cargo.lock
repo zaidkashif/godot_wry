@@ -712,6 +712,7 @@ dependencies = [
  "ndk",
  "ndk-context",
  "ndk-sys",
+ "objc2",
  "raw-window-handle",
  "serde_json",
  "windows 0.61.3",

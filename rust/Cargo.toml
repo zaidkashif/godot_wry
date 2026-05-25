@@ -31,6 +31,16 @@ jni = "0.21.1"
 ndk = "0.9"
 ndk-sys = "0.6.0"
 
+# iOS — unlike Android, WRY's iOS backend DOES use a real window handle
+# (a `UIView*` wrapped in `raw_window_handle::UiKitWindowHandle`), so no
+# `*_setup()` call is required. We only need `objc2` to reach into the live
+# UIKit view tree for "view grafting": bringing WRY's WKWebView to the front
+# of Godot's `godotView` and forcing a transparent background so the Metal/GL
+# 3D scene shows through. `objc2 = 0.6` matches the version WRY 0.50.4 already
+# pulls in on Apple platforms, so this adds no duplicate objc runtime.
+[target.'cfg(target_os = "ios")'.dependencies]
+objc2 = "0.6"
+
 [build-dependencies]
 # Required for WRY's Android build step: generates the Kotlin/Java glue files
 # (WryActivity.kt, etc.) that must be included in the Android APK's source set.

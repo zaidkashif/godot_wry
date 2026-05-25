@@ -7,6 +7,12 @@ mod protocols;
 #[cfg(target_os = "android")]
 mod android;
 
+// iOS integration — compiled only when targeting iOS. Provides the UIKit
+// "view grafting" used to place WRY's WKWebView in front of Godot's render
+// surface and force it transparent (see ios.rs).
+#[cfg(target_os = "ios")]
+mod ios;
+
 // WRY Android binding macro — MUST be at crate root.
 //
 // Generates the JNI symbols that the Java WryActivity calls back into for
@@ -43,8 +49,10 @@ use wry::dpi::{PhysicalPosition, PhysicalSize};
 use wry::http::Request;
 
 // GodotWindow is only used on desktop platforms (Win32/AppKit/Xlib).
-// On Android, WRY attaches to the Activity via ndk_context instead.
-#[cfg(not(target_os = "android"))]
+// On Android, WRY attaches to the Activity via ndk_context; on iOS we build a
+// UiKitWindowHandle inline (see the iOS branch of build_webview), so neither
+// mobile target uses GodotWindow.
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::godot_window::GodotWindow;
 
 #[cfg(all(not(target_os = "android"), target_os = "windows"))]
@@ -272,21 +280,23 @@ impl WebView {
         }
 
         // ── Desktop path (Windows / macOS / Linux) ───────────────────────────
-        #[cfg(not(target_os = "android"))]
+        // The GodotWindow / raw-window-handle machinery below is desktop-only.
+        // iOS builds its own UiKitWindowHandle in the iOS branch further down,
+        // and Android uses ndk_context — so both mobile targets are excluded here.
         #[cfg(target_os = "linux")]
         gtk::init().expect("Failed to initialize GTK");
 
-        #[cfg(not(target_os = "android"))]
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         let window_id = self.base().get_window()
             .map(|w| w.get_window_id())
             .unwrap_or(0);
 
-        #[cfg(not(target_os = "android"))]
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         {
             self.window_id = window_id;
         }
 
-        #[cfg(not(target_os = "android"))]
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         let window = GodotWindow::new(window_id);
 
         // Remove WS_CLIPCHILDREN from the window style so that transparent
@@ -596,8 +606,286 @@ impl WebView {
                 godot_error!("[Godot WRY] Failed to get valid window handle from DisplayServer");
             }
         }
-        // ── Desktop path (non-Android) ────────────────────────────────────────
-        #[cfg(not(target_os = "android"))]
+        // ── iOS path ────────────────────────────────────────────────────────
+        //
+        // WRY's iOS backend is a `WKWebView` and, unlike Android, it DOES take a
+        // real window handle: a `UIView*` wrapped in `UiKitWindowHandle`. WRY
+        // adds the `WKWebView` as a subview of that view, so the model mirrors
+        // macOS/AppKit more than Android. There is no `ios_setup()` to call.
+        //
+        // KEY POINTS (mirroring the Android fixes):
+        //   * `build_as_child()` is UNSUPPORTED on iOS — we must use `build()`
+        //     with a `HasWindowHandle` wrapper, exactly like the Android path.
+        //   * The `WebContext` must outlive `build()`, so we store it in
+        //     `self.web_context` rather than a local that would be dropped.
+        //   * We force `transparent: true` and then "graft" the WKWebView to the
+        //     front of Godot's `godotView` with a clear background so the 3D
+        //     scene shows through (see `ios.rs`).
+        //   * Touch is handled natively by WKWebView, so — like Android — we do
+        //     NOT inject the desktop mouse/key IPC-forwarding script.
+        #[cfg(target_os = "ios")]
+        {
+            use core::ffi::c_void;
+            use core::ptr::NonNull;
+            use raw_window_handle::{
+                HasWindowHandle, RawWindowHandle, UiKitWindowHandle, WindowHandle,
+            };
+
+            self.window_id = self
+                .base()
+                .get_window()
+                .map(|w| w.get_window_id())
+                .unwrap_or(0);
+
+            // Godot's main render view (the `godotView` UIView). WRY parents its
+            // WKWebView to this; we also graft against it afterwards.
+            let ui_view_ptr = crate::ios::get_godot_ui_view();
+            if ui_view_ptr.is_null() {
+                godot_error!(
+                    "[Godot WRY] iOS: Godot's godotView (WINDOW_VIEW) handle is null — \
+                     cannot build the WebView. Is the WebView node in the active scene tree?"
+                );
+                return;
+            }
+
+            // Clone the shared Arcs BEFORE borrowing `self.web_context` mutably,
+            // so the IPC closure captures clones (not `self`).
+            let cached_pos = Arc::clone(&self.cached_global_position);
+
+            // FIX (mirror of Android FIX 1): keep WebContext alive for the
+            // node's lifetime instead of dropping a local after build().
+            self.web_context = Some(WebContext::new(resolved_data_directory));
+            let context = self.web_context.as_mut().unwrap();
+
+            let webview_builder = WebViewBuilder::with_attributes(WebViewAttributes {
+                context: Some(context),
+                url: if self.html.is_empty() { Some(String::from(&self.url)) } else { None },
+                html: if self.url.is_empty() { Some(String::from(&self.html)) } else { None },
+                transparent: true, // force-transparent so the Godot scene shows through
+                devtools: self.devtools,
+                user_agent: Some(String::from(&self.user_agent)),
+                zoom_hotkeys_enabled: self.zoom_hotkeys,
+                clipboard: self.clipboard,
+                incognito: self.incognito,
+                focused: self.focused_when_created,
+                autoplay: self.autoplay,
+                accept_first_mouse: true,
+                ..Default::default()
+            })
+            .with_custom_protocol("res".into(), move |_webview_id, request| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| crate::protocols::get_res_response(request)))
+                    .unwrap_or_else(|_| {
+                        http::Response::builder()
+                            .header("Content-Type", "text/plain")
+                            .status(500)
+                            .body(std::borrow::Cow::from(b"res:// handler error" as &[u8]))
+                            .unwrap()
+                    })
+            })
+            .with_ipc_handler({
+                let base = Arc::clone(&base);
+                let cached_pos = Arc::clone(&cached_pos);
+                move |req: Request<String>| {
+                    let mut base = base.lock().unwrap();
+                    let body = req.body().as_str();
+
+                    if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(body) {
+                        if let Some(event_type) = json_value.get("type").and_then(|t| t.as_str()) {
+                            // IPC fires off the main thread on iOS too — read the
+                            // cached position rather than touching the node here.
+                            let global_pos = *cached_pos.lock().unwrap();
+                            let x = json_value.get("x").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                            let y = json_value.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                            let vp_x = global_pos.x + x;
+                            let vp_y = global_pos.y + y;
+
+                            match event_type {
+                                "_mouse_move" => {
+                                    let movement_x = json_value.get("movementX").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let movement_y = json_value.get("movementY").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let mut event = InputEventMouseMotion::new_gd();
+                                    event.set_position(Vector2::new(vp_x, vp_y));
+                                    event.set_global_position(Vector2::new(vp_x, vp_y));
+                                    let button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
+                                    event.set_button_mask(*button_mask);
+                                    event.set_relative(Vector2::new(movement_x, movement_y));
+                                    if let Some(mut viewport) = base.get_viewport() {
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
+                                    }
+                                    return;
+                                }
+
+                                "_mouse_down" | "_mouse_up" => {
+                                    let button = json_value.get("button").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+                                    let godot_button = match button {
+                                        0 => MouseButton::LEFT,
+                                        1 => MouseButton::MIDDLE,
+                                        2 => MouseButton::RIGHT,
+                                        3 => MouseButton::WHEEL_UP,
+                                        4 => MouseButton::WHEEL_DOWN,
+                                        _ => MouseButton::LEFT,
+                                    };
+                                    let pressed = event_type == "_mouse_down";
+                                    let mask = match godot_button {
+                                        MouseButton::LEFT => MouseButtonMask::LEFT,
+                                        MouseButton::RIGHT => MouseButtonMask::RIGHT,
+                                        MouseButton::MIDDLE => MouseButtonMask::MIDDLE,
+                                        _ => MouseButtonMask::default(),
+                                    };
+                                    if godot_button != MouseButton::WHEEL_UP && godot_button != MouseButton::WHEEL_DOWN {
+                                        let mut button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
+                                        if pressed {
+                                            *button_mask = *button_mask | mask;
+                                        } else {
+                                            match godot_button {
+                                                MouseButton::LEFT => {
+                                                    if button_mask.is_set(MouseButtonMask::LEFT) {
+                                                        *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::LEFT.ord());
+                                                    }
+                                                }
+                                                MouseButton::RIGHT => {
+                                                    if button_mask.is_set(MouseButtonMask::RIGHT) {
+                                                        *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::RIGHT.ord());
+                                                    }
+                                                }
+                                                MouseButton::MIDDLE => {
+                                                    if button_mask.is_set(MouseButtonMask::MIDDLE) {
+                                                        *button_mask = MouseButtonMask::from_ord(button_mask.ord() & !MouseButtonMask::MIDDLE.ord());
+                                                    }
+                                                }
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                    let mut event = InputEventMouseButton::new_gd();
+                                    event.set_button_index(godot_button);
+                                    event.set_position(Vector2::new(vp_x, vp_y));
+                                    event.set_global_position(Vector2::new(vp_x, vp_y));
+                                    event.set_pressed(pressed);
+                                    let button_mask = CURRENT_BUTTON_MASK.lock().unwrap();
+                                    event.set_button_mask(*button_mask);
+                                    if let Some(mut viewport) = base.get_viewport() {
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
+                                    }
+                                    return;
+                                }
+
+                                "_mouse_wheel" => {
+                                    let delta_x = json_value.get("deltaX").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let delta_y = json_value.get("deltaY").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                                    let position = Vector2::new(vp_x, vp_y);
+                                    let button_mask = *CURRENT_BUTTON_MASK.lock().unwrap();
+                                    let modifiers = (
+                                        json_value.get("shift").and_then(|v| v.as_bool()).unwrap_or(false),
+                                        json_value.get("ctrl").and_then(|v| v.as_bool()).unwrap_or(false),
+                                        json_value.get("alt").and_then(|v| v.as_bool()).unwrap_or(false),
+                                        json_value.get("meta").and_then(|v| v.as_bool()).unwrap_or(false),
+                                    );
+                                    let viewport = base.get_viewport();
+                                    if delta_y != 0.0 {
+                                        let button = if delta_y < 0.0 { MouseButton::WHEEL_UP } else { MouseButton::WHEEL_DOWN };
+                                        let factor = (delta_y.abs() / 100.0).max(1.0);
+                                        send_wheel_event(button, position, factor, button_mask, modifiers, &viewport);
+                                    }
+                                    if delta_x != 0.0 {
+                                        let button = if delta_x < 0.0 { MouseButton::WHEEL_LEFT } else { MouseButton::WHEEL_RIGHT };
+                                        let factor = (delta_x.abs() / 100.0).max(1.0);
+                                        send_wheel_event(button, position, factor, button_mask, modifiers, &viewport);
+                                    }
+                                    return;
+                                }
+
+                                "_key_down" | "_key_up" => {
+                                    let key_str = json_value.get("key").and_then(|v| v.as_str()).unwrap_or("");
+                                    let mut event = InputEventKey::new_gd();
+                                    let godot_key = GODOT_KEYS.get(key_str).copied().unwrap_or(Key::NONE);
+                                    event.set_keycode(godot_key);
+                                    event.set_pressed(event_type == "_key_down");
+                                    event.set_shift_pressed(json_value.get("shift").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    event.set_ctrl_pressed(json_value.get("ctrl").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    event.set_alt_pressed(json_value.get("alt").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    event.set_meta_pressed(json_value.get("meta").and_then(|v| v.as_bool()).unwrap_or(false));
+                                    if let Some(mut viewport) = base.get_viewport() {
+                                        viewport.call_deferred("push_input", &[event.to_variant()]);
+                                    }
+                                    return;
+                                }
+
+                                _ => {}
+                            }
+                        }
+                    }
+
+                    base.call_deferred("emit_signal", &["ipc_message".to_variant(), body.to_variant()]);
+                }
+            })
+            .with_on_page_load_handler({
+                let base = Arc::clone(&base);
+                move |event: PageLoadEvent, url: String| {
+                    let mut base = base.lock().unwrap();
+                    match event {
+                        PageLoadEvent::Started => base.call_deferred("emit_signal", &["page_load_started".to_variant(), url.to_variant()]),
+                        PageLoadEvent::Finished => base.call_deferred("emit_signal", &["page_load_finished".to_variant(), url.to_variant()]),
+                    };
+                }
+            })
+            .with_initialization_script(r#"
+    (function() {
+        var style = document.createElement('style');
+        style.innerHTML = `
+            html, body, #app, main, div[data-sveltekit-svelte-body], div[data-sveltekit-body] {
+                background: transparent !important;
+                background-color: transparent !important;
+            }
+        `;
+        if (document.head) {
+            document.head.appendChild(style);
+        } else {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.head.appendChild(style);
+            });
+        }
+    })();
+"#);
+
+            // Build the UiKitWindowHandle. WRY uses `ui_view` as the parent for
+            // its WKWebView; `ui_view_controller` is optional but helps WebKit
+            // present native UI (file pickers, alerts) correctly.
+            let mut uikit_handle =
+                UiKitWindowHandle::new(NonNull::new(ui_view_ptr as *mut c_void).unwrap());
+            let vc_ptr = crate::ios::get_godot_view_controller();
+            if let Some(vc) = NonNull::new(vc_ptr as *mut c_void) {
+                uikit_handle.ui_view_controller = Some(vc);
+            }
+            let raw_window_handle = RawWindowHandle::UiKit(uikit_handle);
+            let borrowed_handle = unsafe { WindowHandle::borrow_raw(raw_window_handle) };
+
+            // WRY requires a `HasWindowHandle`; the type system needs an owner
+            // for the borrowed handle, so wrap it (same shape as the Android path).
+            struct Wrapper<'a>(WindowHandle<'a>);
+            impl<'a> HasWindowHandle for Wrapper<'a> {
+                fn window_handle(&self) -> Result<WindowHandle<'_>, raw_window_handle::HandleError> {
+                    Ok(self.0.clone())
+                }
+            }
+
+            match webview_builder.build(&Wrapper(borrowed_handle)) {
+                Ok(wv) => {
+                    godot_print!("[Godot WRY] iOS WebView built successfully!");
+                    self.webview.replace(wv);
+                    // Graft: raise the WKWebView above Godot's render layer and
+                    // force a transparent background so the 3D scene shows through.
+                    crate::ios::graft_webview_to_front(ui_view_ptr);
+                }
+                Err(e) => {
+                    godot_error!("[Godot WRY] iOS WebView build failed: {e}");
+                    self.web_context = None;
+                }
+            };
+        }
+
+        // ── Desktop path (Windows / macOS / Linux) ────────────────────────────
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         {
             // On desktop, WebContext can be a local variable because
             // build_as_child() is synchronous and the WebView copies what it
@@ -769,7 +1057,7 @@ impl WebView {
             })
 .with_custom_protocol(
     "res".into(), move |_webview_id, request| {
-        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| get_res_response(request)))
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| crate::protocols::get_res_response(request)))
             .unwrap_or_else(|_| {
                 http::Response::builder()
                     .header("Content-Type", "text/plain")
@@ -985,6 +1273,13 @@ impl WebView {
         if let Some(stripped) = url_str.strip_prefix("res://") {
             let path = stripped.replace("\\", "/");
 
+            // Linux (WebKitGTK) serves the custom protocol at the real `res://`
+            // scheme. Every other backend — Windows (WebView2), macOS AND iOS
+            // (WKWebView) — uses WRY's `http://<scheme>.<host>/` convention, so
+            // iOS deliberately falls into the same branch as macOS here. The
+            // `res://` files are read by `protocols.rs::get_res_response` via
+            // Godot's `FileAccess`, which resolves the bundled `.pck` identically
+            // on every platform (inside the `.ipa` on iOS).
             #[cfg(target_os = "linux")]
             {
                 url_str = format!("res://{}", path);
@@ -1188,6 +1483,7 @@ lazy_static! {
 // ── WRY LIFECYCLE JNI BINDINGS ─────────────────────────────────────────
 // Expose the native hooks expected by your com.example.godotwry.WryActivity wrapper
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_create(
     _env: jni::JNIEnv,
@@ -1197,6 +1493,7 @@ pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_create(
     godot_print!("[Godot WRY JNI] Native lifecycle hook: create executed.");
 }
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_start(
     _env: jni::JNIEnv,
@@ -1205,6 +1502,7 @@ pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_start(
     godot_print!("[Godot WRY JNI] Native lifecycle hook: start executed.");
 }
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_resume(
     _env: jni::JNIEnv,
@@ -1213,6 +1511,7 @@ pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_resume(
     godot_print!("[Godot WRY JNI] Native lifecycle hook: resume executed.");
 }
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_focus(
     _env: jni::JNIEnv,
@@ -1222,6 +1521,7 @@ pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_focus(
     // Keeps window focus states synchronized across runtime contexts
 }
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_pause(
     _env: jni::JNIEnv,
@@ -1230,6 +1530,7 @@ pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_pause(
     godot_print!("[Godot WRY JNI] Native lifecycle hook: pause executed.");
 }
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_stop(
     _env: jni::JNIEnv,
@@ -1238,6 +1539,7 @@ pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_stop(
     godot_print!("[Godot WRY JNI] Native lifecycle hook: stop executed.");
 }
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_save(
     _env: jni::JNIEnv,
@@ -1246,6 +1548,7 @@ pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_save(
     // Handles state serialization checkpoints if needed
 }
 
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub unsafe extern "C" fn Java_com_example_godotwry_WryActivity_destroy(
     _env: jni::JNIEnv,

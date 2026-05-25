@@ -15,6 +15,10 @@ pub fn get_res_response(request: Request<Vec<u8>>) -> Response<Cow<'static, [u8]
             return get_res_response_android(request);
         }
 
+        // Desktop AND iOS share this path: both read `res://` through Godot's
+        // `FileAccess`, which resolves the packed `.pck` on every platform
+        // (inside the `.ipa` on iOS). Only Android needs the AAssetManager path
+        // above, because its WebView reads from the APK's `assets/` directory.
         #[cfg(not(target_os = "android"))]
         {
             return get_res_response_desktop(request);

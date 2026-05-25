@@ -23,6 +23,18 @@ android.release.arm64  = "bin/android/arm64-v8a/libgodot_wry.so"
 android.debug.x86_64   = "bin/android/x86_64/libgodot_wry.so"
 android.release.x86_64 = "bin/android/x86_64/libgodot_wry.so"
 
+# iOS — a single .xcframework holds both slices:
+#   ios-arm64            (physical devices, aarch64-apple-ios)
+#   ios-arm64-simulator  (Apple Silicon Simulator, aarch64-apple-ios-sim)
+# Build it with scripts/build_ios.sh. Godot's iOS exporter selects the correct
+# slice for the chosen destination (device vs simulator).
+# Godot's iOS exporter matches per-architecture, so the keys MUST include the
+# arm64 tag (the simulator on Apple Silicon is also arm64; the xcframework holds
+# both the ios-arm64 and ios-arm64-simulator slices and Xcode picks per-SDK).
+ios.arm64          = "bin/ios/libgodot_wry.xcframework"
+ios.debug.arm64    = "bin/ios/libgodot_wry.xcframework"
+ios.release.arm64  = "bin/ios/libgodot_wry.xcframework"
+
 [icons]
 WebView = "icons/webview.svg"
 
@@ -47,3 +59,7 @@ android.debug.arm64   = { "bin/android/arm64-v8a/libgodot_wry.so": "" }
 android.release.arm64 = { "bin/android/arm64-v8a/libgodot_wry.so": "" }
 android.debug.x86_64  = { "bin/android/x86_64/libgodot_wry.so": "" }
 android.release.x86_64 = { "bin/android/x86_64/libgodot_wry.so": "" }
+
+ios.arm64         = { "bin/ios/libgodot_wry.xcframework": "" }
+ios.debug.arm64   = { "bin/ios/libgodot_wry.xcframework": "" }
+ios.release.arm64 = { "bin/ios/libgodot_wry.xcframework": "" }
